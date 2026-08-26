@@ -4,7 +4,7 @@ import { getFashionProducts } from './services/supabase';
 import { TikTokShopSection } from './components/fashion/TikTokShopSection';
 import { AdminDashboard } from './pages/AdminDashboard';
 import CheckoutModal from './components/CheckoutModal';
-import { Crown, Diamond, Flame, Trash2, MapPin, ArrowRight, Heart, X, Share2, Copy, Send, Twitter, Store, ShoppingCart, SlidersHorizontal, Eye, ExternalLink, ChevronDown, AlertTriangle, Sparkles } from 'lucide-react';
+import { Crown, Flame, Trash2, MapPin, ArrowRight, Heart, X, Share2, Copy, Send, Twitter, Store, ShoppingCart, SlidersHorizontal, Eye, ExternalLink, ChevronDown, AlertTriangle, Sparkles } from 'lucide-react';
 
 // Official Standard WhatsApp SVG Icon
 function WhatsAppIcon({ className = "w-5 h-5" }) {
@@ -61,32 +61,32 @@ export default function App() {
     {
       id: 1,
       tag: "OWAMBE COUTURE",
-      title: "Slay In Every Event",
+      title: "Owambe Couture & Royal Glamour",
       type: "video",
       videoUrl: "https://assets.mixkit.co/videos/preview/mixkit-fashion-model-walking-on-a-catwalk-41584-large.mp4",
       posterUrl: "https://images.unsplash.com/photo-1571513722275-4b41940f54b8?w=1920&auto=format&fit=crop&q=85",
-      cta: "Watch TikTok Reels"
+      cta: "Explore Collection"
     },
     {
       id: 2,
       tag: "ROYAL VELVET",
-      title: "Royal Velvet & Owambe Glamour",
+      title: "Hand-Crafted Velvet & Ankara Lace",
       type: "image",
       imageUrl: "https://images.unsplash.com/photo-1571513722275-4b41940f54b8?w=1920&auto=format&fit=crop&q=85",
-      cta: "Explore Owambe Fits"
+      cta: "Shop Owambe Fits"
     },
     {
       id: 3,
       tag: "VIRAL TIKTOK",
-      title: "Adire Silk Sets",
+      title: "Abeokuta Adire Silk Sets",
       type: "image",
       imageUrl: "https://images.unsplash.com/photo-1589156280159-27698a70f29e?w=1920&auto=format&fit=crop&q=85",
-      cta: "Shop Silk Sets"
+      cta: "Watch TikTok Reels"
     },
     {
       id: 4,
       tag: "ASO-EBI ELEGANCE",
-      title: "Lagos Wedding Couture",
+      title: "Lagos VIP Wedding Couture",
       type: "image",
       imageUrl: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=1920&auto=format&fit=crop&q=85",
       cta: "Explore Couture Fits"
@@ -197,7 +197,7 @@ export default function App() {
 
   const handleShareClick = (e, item) => {
     if (e) e.stopPropagation();
-    setShareItem(item || { name: siteConfig.storeName, price: 0, image: 'https://images.unsplash.com/photo-1571513722275-4b41940f54b8?w=600' });
+    setShareItem(item || { name: 'GIFTY', price: 0, image: 'https://images.unsplash.com/photo-1571513722275-4b41940f54b8?w=600' });
   };
 
   const copyToClipboard = () => {
@@ -219,7 +219,7 @@ export default function App() {
   const SharedFooter = () => (
     <footer className="mt-16 sm:mt-20 pt-10 sm:pt-14 border-t border-stone-200/80 grid grid-cols-1 md:grid-cols-3 gap-8 sm:gap-10 text-stone-700 overflow-hidden">
       <div className="space-y-4">
-        <h3 className="text-2xl font-serif font-black text-stone-900">{siteConfig.storeName}</h3>
+        <h3 className="text-2xl font-serif font-black text-stone-900">GIFTY</h3>
         <p className="text-xs text-stone-500 leading-relaxed">
           Lagos' premier mobile & desktop boutique storefront. Serving style lovers in Nigeria, UK, USA, and worldwide.
         </p>
@@ -268,7 +268,7 @@ export default function App() {
       </div>
 
       <div className="col-span-1 md:col-span-3 pt-6 sm:pt-8 border-t border-stone-200/60 text-center text-[11px] text-stone-400">
-        © 2026 Gifty Store. All rights reserved. Built for Luxury Fashion.
+        © 2026 GIFTY. All rights reserved. Built for Luxury Fashion.
       </div>
     </footer>
   );
@@ -282,49 +282,45 @@ export default function App() {
         </div>
       )}
 
-      {/* Ultra-Clean Minimal Header Navbar */}
+      {/* High-Fashion Minimalist Header Navbar — "GIFTY" Clean Brand Mark */}
       <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-stone-200/80 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 py-3.5 flex items-center justify-between">
           
-          {/* Logo Badge: Gifty Store */}
-          <div onClick={handleLogoClick} className="flex items-center gap-2 sm:gap-3 cursor-pointer group" title="Triple tap for owner admin">
-            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-tr from-amber-500 via-amber-400 to-amber-200 text-stone-950 font-black flex items-center justify-center shadow-md group-hover:scale-105 transition">
-              <Crown className="w-4 h-4 sm:w-5 sm:h-5 text-stone-950" />
+          {/* Clean GIFTY Logo */}
+          <div onClick={handleLogoClick} className="flex items-center gap-2.5 cursor-pointer group" title="Triple tap for owner admin">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-stone-950 text-amber-400 font-black flex items-center justify-center shadow-md group-hover:scale-105 transition">
+              <Crown className="w-5 h-5 text-amber-400" />
             </div>
-            <span className="font-serif font-black text-stone-900 tracking-tight text-lg sm:text-xl block leading-none">
-              {siteConfig.storeName}
+            <span className="font-serif font-black text-stone-950 tracking-[0.2em] text-xl sm:text-2xl uppercase leading-none">
+              GIFTY
             </span>
           </div>
 
-          {/* Clean View Switcher */}
-          <div className="flex items-center bg-stone-100 p-1 rounded-full border border-stone-200/80">
+          {/* Clean Action Navigation */}
+          <div className="flex items-center gap-2 sm:gap-3">
             <button
               onClick={() => setView('store')}
-              className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-extrabold transition ${
+              className={`px-4 py-2 rounded-full text-xs font-black transition ${
                 view === 'store'
-                  ? 'bg-stone-900 text-amber-400 shadow'
-                  : 'text-stone-600 hover:text-stone-900'
+                  ? 'bg-stone-950 text-amber-400 shadow-md'
+                  : 'text-stone-600 hover:text-stone-900 bg-stone-100'
               }`}
             >
-              <Store className="w-3.5 h-3.5" />
-              <span>Shop</span>
+              Shop
             </button>
 
             <button
               onClick={() => setView('reels')}
-              className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-extrabold transition ${
+              className={`px-4 py-2 rounded-full text-xs font-black transition flex items-center gap-1.5 ${
                 view === 'reels'
-                  ? 'bg-rose-600 text-white shadow'
-                  : 'text-stone-600 hover:text-rose-600'
+                  ? 'bg-rose-600 text-white shadow-md'
+                  : 'text-stone-700 bg-rose-50 hover:bg-rose-100'
               }`}
             >
-              <TikTokIcon className="w-3.5 h-3.5" />
-              <span>TikTok Deals</span>
+              <TikTokIcon className="w-3.5 h-3.5 text-rose-600 fill-rose-600" />
+              <span>TikTok</span>
             </button>
-          </div>
 
-          {/* Action Icons (Wishlist & Cart Only) */}
-          <div className="flex items-center gap-2">
             <button
               onClick={() => setIsWishlistOpen(!isWishlistOpen)}
               className="relative p-2.5 bg-stone-100 hover:bg-stone-200 rounded-full text-stone-800 border border-stone-200 transition"
@@ -332,7 +328,7 @@ export default function App() {
             >
               <Heart className={`w-4 h-4 ${wishlist.length > 0 ? 'fill-rose-500 text-rose-500' : ''}`} />
               {wishlist.length > 0 && (
-                <span className="absolute -top-1 -right-1 bg-rose-600 text-white text-[10px] font-black rounded-full w-4.5 h-4.5 flex items-center justify-center shadow-lg animate-pulse ring-2 ring-white">
+                <span className="absolute -top-1 -right-1 bg-rose-600 text-white text-[10px] font-black rounded-full w-4.5 h-4.5 flex items-center justify-center shadow-lg ring-2 ring-white">
                   {wishlist.length}
                 </span>
               )}
@@ -340,7 +336,7 @@ export default function App() {
             
             <button
               onClick={() => setIsCartOpen(!isCartOpen)}
-              className="relative p-2.5 bg-stone-900 hover:bg-black text-amber-400 rounded-full shadow-md transition"
+              className="relative p-2.5 bg-stone-950 hover:bg-black text-amber-400 rounded-full shadow-md transition"
               title="Shopping Cart"
             >
               <ShoppingCart className="w-4 h-4 text-amber-400" />
@@ -358,7 +354,7 @@ export default function App() {
       {view === 'store' && (
         <main className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 py-6 space-y-10 md:space-y-14 overflow-x-hidden">
           
-          {/* Ultra-Clean High-Fashion Hero Banner */}
+          {/* High-Fashion Hero Banner */}
           <div className="relative h-[340px] sm:h-[380px] md:h-[440px] rounded-3xl overflow-hidden shadow-2xl border border-stone-200 flex flex-col justify-end p-6 sm:p-10 md:p-12">
             {heroSlides.map((slide, idx) => (
               <div
@@ -371,7 +367,7 @@ export default function App() {
                   <video
                     src={slide.videoUrl}
                     poster={slide.posterUrl}
-                    className="w-full h-full object-cover brightness-90"
+                    className="w-full h-full object-cover brightness-95"
                     autoPlay
                     loop
                     muted
@@ -382,7 +378,7 @@ export default function App() {
                     src={slide.imageUrl}
                     alt={slide.title}
                     loading="lazy"
-                    className="w-full h-full object-cover brightness-90"
+                    className="w-full h-full object-cover brightness-95"
                   />
                 )}
               </div>
@@ -390,21 +386,20 @@ export default function App() {
 
             <div className="absolute inset-0 bg-gradient-to-t from-stone-950 via-stone-950/35 to-transparent pointer-events-none" />
 
+            {/* Icon-Only Share Button on Mobile, Full Label on Desktop */}
             <button
               onClick={(e) => handleShareClick(e, null)}
-              className="absolute top-4 right-4 z-20 bg-white/90 backdrop-blur-md hover:bg-white text-stone-950 px-3.5 py-2 rounded-full font-bold text-xs flex items-center gap-1.5 shadow-xl transition"
+              className="absolute top-4 right-4 z-20 bg-white/90 backdrop-blur-md hover:bg-white text-stone-950 p-2.5 sm:px-3.5 sm:py-2 rounded-full font-bold text-xs flex items-center gap-1.5 shadow-xl transition"
+              title="Share This Look"
             >
-              <Share2 className="w-3.5 h-3.5 text-amber-600" /> Share
+              <Share2 className="w-4 h-4 text-amber-600" />
+              <span className="hidden sm:inline">Share This Look</span>
             </button>
 
             <div className="relative max-w-xl space-y-3 z-10 text-white">
-              
-              {/* Enticing Golden Luxury Shipping Badge */}
-              <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-amber-400 text-stone-950 font-black text-[11px] sm:text-xs tracking-wider shadow-xl border border-amber-300">
-                <Sparkles className="w-3.5 h-3.5 text-stone-950 fill-stone-950" />
-                <span>FREE EXPRESS SHIPPING OVER NGN 100,000</span>
-              </div>
-
+              <span className="text-[10px] font-black uppercase tracking-widest text-amber-400 bg-stone-950/80 px-3 py-1 rounded-full border border-amber-400/30">
+                {heroSlides[currentSlide].tag}
+              </span>
               <h1 className="text-2xl sm:text-4xl md:text-5xl font-serif font-black leading-tight text-white drop-shadow-md">
                 {heroSlides[currentSlide].title}
               </h1>
@@ -435,7 +430,7 @@ export default function App() {
           {/* TikTok Shop Section */}
           <TikTokShopSection products={safeProducts} onAddToCart={addToCart} />
 
-          {/* Catalog Grid with Size & Price Filters */}
+          {/* Catalog Grid with Size & Price Filters — Spacious & Uncongested Mobile Layout */}
           <div className="space-y-6 pt-6 border-t border-stone-200">
             <div className="flex flex-col space-y-4">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
@@ -504,8 +499,8 @@ export default function App() {
               </div>
             </div>
 
-            {/* Product Grid */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6 md:gap-8">
+            {/* Spacious Luxury Product Grid — 1 Column on Mobile for Elegant Big Cards, 2 on SM, 4 on LG */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 sm:gap-6 md:gap-8">
               {displayedProducts.map((product) => {
                 const isWishlisted = wishlist.some((w) => String(w.id) === String(product.id));
                 const isSoldOut = product.stock === 0;
@@ -517,14 +512,14 @@ export default function App() {
                     onClick={() => openSingleProduct(product)}
                     className="bg-white rounded-3xl overflow-hidden border border-stone-200/80 shadow-sm hover:shadow-xl transition duration-300 flex flex-col group relative cursor-pointer"
                   >
-                    <div className="absolute top-2.5 right-2.5 z-30 flex items-center gap-1">
+                    <div className="absolute top-3 right-3 z-30 flex items-center gap-1.5">
                       <button
                         type="button"
                         onClick={(e) => handleShareClick(e, product)}
-                        className="p-2 bg-white/90 backdrop-blur-md rounded-full shadow-md hover:scale-110 active:scale-95 transition text-stone-700 hover:text-amber-600"
+                        className="p-2.5 bg-white/90 backdrop-blur-md rounded-full shadow-md hover:scale-110 active:scale-95 transition text-stone-700 hover:text-amber-600"
                         title="Share Outfit"
                       >
-                        <Share2 className="w-3.5 h-3.5" />
+                        <Share2 className="w-4 h-4" />
                       </button>
 
                       <button
@@ -533,14 +528,14 @@ export default function App() {
                           e.stopPropagation();
                           toggleWishlist(product);
                         }}
-                        className="p-2 bg-white/90 backdrop-blur-md rounded-full shadow-md hover:scale-110 active:scale-95 transition"
+                        className="p-2.5 bg-white/90 backdrop-blur-md rounded-full shadow-md hover:scale-110 active:scale-95 transition"
                         title="Save to Wishlist"
                       >
-                        <Heart className={`w-3.5 h-3.5 ${isWishlisted ? 'fill-rose-500 text-rose-500' : 'text-stone-700'}`} />
+                        <Heart className={`w-4 h-4 ${isWishlisted ? 'fill-rose-500 text-rose-500' : 'text-stone-700'}`} />
                       </button>
                     </div>
 
-                    <div className="relative h-64 sm:h-72 md:h-80 w-full bg-stone-100 overflow-hidden">
+                    <div className="relative h-80 sm:h-72 md:h-80 w-full bg-stone-100 overflow-hidden">
                       <img
                         src={product.image}
                         alt={product.name}
@@ -550,39 +545,39 @@ export default function App() {
 
                       {/* Stock Badges */}
                       {isSoldOut ? (
-                        <span className="absolute top-2.5 left-2.5 bg-stone-950 text-white text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-wider shadow">
+                        <span className="absolute top-3 left-3 bg-stone-950 text-white text-[11px] font-black px-3.5 py-1 rounded-full uppercase tracking-wider shadow">
                           SOLD OUT
                         </span>
                       ) : isLowStock ? (
-                        <span className="absolute top-2.5 left-2.5 bg-amber-500 text-stone-950 text-[10px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider shadow flex items-center gap-1">
-                          <AlertTriangle className="w-3 h-3 text-stone-950" /> ONLY {product.stock} LEFT
+                        <span className="absolute top-3 left-3 bg-amber-500 text-stone-950 text-[11px] font-black px-3 py-1 rounded-full uppercase tracking-wider shadow flex items-center gap-1">
+                          <AlertTriangle className="w-3.5 h-3.5 text-stone-950" /> ONLY {product.stock} LEFT
                         </span>
                       ) : product.is_tiktok_featured ? (
-                        <span className="absolute top-2.5 left-2.5 bg-stone-900/90 text-amber-400 text-[9px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider shadow">
-                          REEL
+                        <span className="absolute top-3 left-3 bg-stone-900/90 text-amber-400 text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-wider shadow">
+                          TIKTOK REEL
                         </span>
                       ) : null}
                     </div>
 
-                    <div className="p-4 md:p-5 flex-1 flex flex-col justify-between space-y-3">
+                    <div className="p-5 flex-1 flex flex-col justify-between space-y-4">
                       <div>
-                        <span className="text-[10px] font-bold text-amber-700 uppercase tracking-wider">{product.category}</span>
-                        <h3 className="text-sm md:text-base font-bold text-stone-900 truncate mt-0.5">{product.name}</h3>
-                        <p className="text-base md:text-lg font-black text-amber-600 mt-1">
+                        <span className="text-[10px] font-bold text-amber-700 uppercase tracking-wider block mb-1">{product.category}</span>
+                        <h3 className="text-base sm:text-lg font-bold text-stone-900 truncate">{product.name}</h3>
+                        <p className="text-lg sm:text-xl font-black text-amber-600 mt-1">
                           {formatCurrencyPrice(product.price)}
                         </p>
                       </div>
 
-                      {/* Side-by-Side Action Buttons */}
-                      <div className="grid grid-cols-2 gap-2 pt-1">
+                      {/* Uncongested Luxury Action Buttons */}
+                      <div className="grid grid-cols-2 gap-2.5 pt-1">
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
                             openSingleProduct(product);
                           }}
-                          className="bg-stone-100 hover:bg-stone-200 text-stone-900 font-extrabold py-2.5 rounded-xl text-[11px] flex items-center justify-center gap-1 transition"
+                          className="bg-stone-100 hover:bg-stone-200 text-stone-900 font-extrabold py-3 rounded-2xl text-xs flex items-center justify-center gap-1.5 transition"
                         >
-                          <Eye className="w-3.5 h-3.5 text-amber-600" /> View
+                          <Eye className="w-4 h-4 text-amber-600" /> View Fit
                         </button>
                         
                         <button
@@ -591,13 +586,13 @@ export default function App() {
                             e.stopPropagation();
                             addToCart(product);
                           }}
-                          className={`font-extrabold py-2.5 rounded-xl text-[11px] flex items-center justify-center gap-1 transition shadow-md ${
+                          className={`font-extrabold py-3 rounded-2xl text-xs flex items-center justify-center gap-1.5 transition shadow-md ${
                             isSoldOut
                               ? 'bg-stone-200 text-stone-400 cursor-not-allowed shadow-none'
-                              : 'bg-stone-900 hover:bg-black text-white'
+                              : 'bg-stone-900 hover:bg-black text-amber-400'
                           }`}
                         >
-                          <ShoppingCart className="w-3.5 h-3.5 text-amber-400" /> {isSoldOut ? 'Sold Out' : '+Cart'}
+                          <ShoppingCart className="w-4 h-4 text-amber-400" /> {isSoldOut ? 'Sold Out' : '+ Add Cart'}
                         </button>
                       </div>
                     </div>
@@ -641,7 +636,7 @@ export default function App() {
 
       {/* Floating Official WhatsApp Chat Button */}
       <a
-        href={`https://wa.me/${siteConfig.whatsappPhone}?text=${encodeURIComponent('Hello Gifty Store! I am browsing your fashion website and would like to ask a question.')}`}
+        href={`https://wa.me/${siteConfig.whatsappPhone}?text=${encodeURIComponent('Hello Gifty! I am browsing your fashion website and would like to ask a question.')}`}
         target="_blank"
         rel="noreferrer"
         className="fixed bottom-6 right-6 z-40 bg-[#25D366] hover:bg-[#20ba5a] text-white p-4 rounded-full shadow-2xl hover:scale-110 active:scale-95 transition flex items-center gap-2 font-bold text-xs"
@@ -790,8 +785,8 @@ export default function App() {
                   <a
                     href={`https://wa.me/${siteConfig.whatsappPhone}?text=${encodeURIComponent(
                       singleProduct.stock === 0
-                        ? `Hello Gifty Store! "${singleProduct.name}" (Size: ${selectedSize}) is currently marked as SOLD OUT on your website. I would like to inquire about placing a pre-order or custom tailored remake!`
-                        : `Hello Gifty Store! I am interested in "${singleProduct.name}" (Size: ${selectedSize}, Listed Price: NGN ${Number(singleProduct.price || 0).toLocaleString()}). I would like to negotiate the price. Please send me a custom discounted website payment link!`
+                        ? `Hello Gifty! "${singleProduct.name}" (Size: ${selectedSize}) is currently marked as SOLD OUT on your website. I would like to inquire about placing a pre-order or custom tailored remake!`
+                        : `Hello Gifty! I am interested in "${singleProduct.name}" (Size: ${selectedSize}, Listed Price: NGN ${Number(singleProduct.price || 0).toLocaleString()}). I would like to negotiate the price. Please send me a custom discounted website payment link!`
                     )}`}
                     target="_blank"
                     rel="noreferrer"
@@ -838,7 +833,7 @@ export default function App() {
               )}
               <div className="flex-1 overflow-hidden">
                 <span className="text-[10px] font-bold text-amber-700 uppercase tracking-wider block">
-                  {shareItem.category || 'Gifty Store Collection'}
+                  {shareItem.category || 'Gifty Collection'}
                 </span>
                 <h4 className="font-bold text-xs text-stone-900 truncate">{shareItem.name}</h4>
                 {shareItem.price > 0 && (
