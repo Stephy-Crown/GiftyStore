@@ -24,7 +24,7 @@ function TikTokIcon({ className = "w-5 h-5" }) {
   );
 }
 
-// Elegant & Universally Harmonious Logo Crest (Works on Store & TikTok Tabs)
+// Compact Logo Crest (Works on Store & TikTok Tabs)
 function BrandLogoCrest() {
   return (
     <div className="flex items-center gap-1.5 sm:gap-2">
@@ -141,9 +141,9 @@ export default function App() {
     }
   }, []);
 
-  const showToast = (msg) => {
-    setToastMessage(msg);
-    setTimeout(() => setToastMessage(null), 3000);
+  const showToast = (msg, action) => {
+    setToastMessage({ text: msg, action });
+    setTimeout(() => setToastMessage(null), 3500);
   };
 
   const handleLogoClick = () => {
@@ -167,6 +167,11 @@ export default function App() {
 
   const filteredProducts = safeProducts.filter((p) => {
     if (!p) return false;
+    
+    if (activeCategory === 'Wishlist') {
+      return wishlist.some((w) => String(w.id) === String(p.id));
+    }
+
     const matchesCategory = activeCategory === 'All' || p.category === activeCategory;
     const matchesSize = selectedSizeFilter === 'All' || (p.sizes && p.sizes.includes(selectedSizeFilter));
     
@@ -209,7 +214,10 @@ export default function App() {
         showToast(`Removed from Wishlist`);
         return prev.filter((item) => String(item.id) !== String(product.id));
       }
-      showToast(`Saved "${product.name}" to Wishlist!`);
+      showToast(`Saved "${product.name}" to Wishlist!`, {
+        label: 'View Wishlist',
+        onClick: () => setIsWishlistOpen(true)
+      });
       return [...prev, product];
     });
   };
@@ -294,14 +302,22 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-[#FAF7F5] text-stone-900 font-sans selection:bg-amber-400 selection:text-black relative pb-12 overflow-x-hidden w-full">
-      {/* Toast Notification */}
+      {/* Sleek & Compact Luxury Toast Notification for Mobile & Desktop */}
       {toastMessage && (
-        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-stone-900 text-white px-5 py-3 rounded-full shadow-2xl text-xs font-bold flex items-center gap-2 border border-stone-800 animate-bounce">
-          <span>{toastMessage}</span>
+        <div className="fixed top-3 sm:top-5 left-1/2 -translate-x-1/2 z-50 bg-stone-950/95 backdrop-blur-md text-white px-3.5 py-2 sm:px-5 sm:py-2.5 rounded-2xl shadow-2xl text-[11px] sm:text-xs font-bold flex items-center justify-between gap-2.5 border border-stone-800/80 max-w-[92vw] sm:max-w-md w-auto">
+          <span className="truncate">{typeof toastMessage === 'string' ? toastMessage : toastMessage.text}</span>
+          {typeof toastMessage === 'object' && toastMessage.action && (
+            <button
+              onClick={toastMessage.action.onClick}
+              className="bg-amber-400 text-stone-950 px-2.5 py-1 rounded-xl text-[10px] font-black uppercase tracking-wider hover:bg-amber-300 transition shrink-0 shadow-sm"
+            >
+              {toastMessage.action.label}
+            </button>
+          )}
         </div>
       )}
 
-      {/* Streamlined Minimalist Header Navbar — Streamlined & Uncongested without Header Heart */}
+      {/* 100% Uncongested Ultra-Clean Header Navbar (Only Logo, Shop, TikTok, and Cart) */}
       <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-stone-200/80 shadow-sm">
         <div className="max-w-7xl mx-auto px-3.5 sm:px-6 md:px-8 py-2.5 sm:py-3 flex items-center justify-between">
           
@@ -310,7 +326,7 @@ export default function App() {
             <BrandLogoCrest />
           </div>
 
-          {/* Clean High-Fashion Navigation Buttons */}
+          {/* Uncongested 3-Button Header Navigation */}
           <div className="flex items-center gap-1.5 sm:gap-2">
             <button
               onClick={() => setView('store')}
@@ -434,17 +450,26 @@ export default function App() {
           {/* TikTok Shop Section */}
           <TikTokShopSection products={safeProducts} onAddToCart={addToCart} />
 
-          {/* Catalog Grid with Size & Price Filters — Spacious & Uncongested Mobile Layout */}
+          {/* Catalog Grid with Size, Price, AND Prominent Wishlist Filter */}
           <div className="space-y-6 pt-6 border-t border-stone-200">
             <div className="flex flex-col space-y-4">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                 <div>
                   <h2 className="text-2xl md:text-3xl font-serif font-black text-stone-900">Boutique Collection</h2>
-                  <p className="text-xs text-stone-500">Filter outfits by Category, Size, or Price Range</p>
+                  <p className="text-xs text-stone-500">Filter outfits by Category, Size, Price, or your Saved Wishlist</p>
                 </div>
+
+                {/* Direct Wishlist Drawer Launcher Button in Catalog Header */}
+                <button
+                  onClick={() => setIsWishlistOpen(true)}
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200/80 text-xs font-black transition self-start sm:self-auto shadow-sm"
+                >
+                  <Heart className={`w-4 h-4 ${wishlist.length > 0 ? 'fill-rose-500 text-rose-500 animate-pulse' : 'text-rose-500'}`} />
+                  <span>Saved Wishlist ({wishlist.length})</span>
+                </button>
               </div>
 
-              {/* Filter Bar */}
+              {/* Filter Bar with Integrated Saved Wishlist Filter Tab */}
               <div className="bg-white p-4 rounded-2xl border border-stone-200 shadow-sm flex flex-wrap items-center gap-4">
                 <div className="flex items-center gap-1.5 font-bold text-xs text-stone-700 mr-2">
                   <SlidersHorizontal className="w-4 h-4 text-amber-600" /> Filter By:
@@ -467,6 +492,22 @@ export default function App() {
                       {cat}
                     </button>
                   ))}
+
+                  {/* Prominent Wishlist Category Filter Pill */}
+                  <button
+                    onClick={() => {
+                      setActiveCategory('Wishlist');
+                      setVisibleCount(8);
+                    }}
+                    className={`px-3.5 py-1.5 rounded-full text-xs font-extrabold whitespace-nowrap transition flex items-center gap-1.5 ${
+                      activeCategory === 'Wishlist'
+                        ? 'bg-rose-600 text-white font-black shadow-md'
+                        : 'bg-rose-50 text-rose-700 hover:bg-rose-100 border border-rose-200/60'
+                    }`}
+                  >
+                    <Heart className={`w-3.5 h-3.5 ${activeCategory === 'Wishlist' ? 'fill-white' : 'fill-rose-500 text-rose-500'}`} />
+                    <span>Saved Outfits ({wishlist.length})</span>
+                  </button>
                 </div>
 
                 <div className="flex items-center gap-1.5">
@@ -505,104 +546,120 @@ export default function App() {
 
             {/* Spacious Luxury Product Grid — 1 Column on Mobile for Elegant Big Cards, 2 on SM, 4 on LG */}
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 sm:gap-6 md:gap-8">
-              {displayedProducts.map((product) => {
-                const isWishlisted = wishlist.some((w) => String(w.id) === String(product.id));
-                const isSoldOut = product.stock === 0;
-                const isLowStock = product.stock > 0 && product.stock <= 3;
-
-                return (
-                  <div
-                    key={product.id || product.name}
-                    onClick={() => openSingleProduct(product)}
-                    className="bg-white rounded-3xl overflow-hidden border border-stone-200/80 shadow-sm hover:shadow-xl transition duration-300 flex flex-col group relative cursor-pointer"
+              {displayedProducts.length === 0 && activeCategory === 'Wishlist' ? (
+                <div className="col-span-full py-16 text-center space-y-3 bg-white rounded-3xl border border-stone-200 p-8 shadow-sm">
+                  <Heart className="w-12 h-12 text-rose-400 mx-auto fill-rose-100 animate-pulse" />
+                  <h3 className="text-lg font-serif font-black text-stone-900">Your Saved Wishlist is Empty</h3>
+                  <p className="text-xs text-stone-500 max-w-sm mx-auto">
+                    Tap the heart icon on top of any dress card in the catalog to save your favorite Owambe & Couture fits!
+                  </p>
+                  <button
+                    onClick={() => setActiveCategory('All')}
+                    className="mt-2 bg-stone-900 text-amber-400 font-bold px-6 py-2.5 rounded-full text-xs uppercase tracking-wider"
                   >
-                    <div className="absolute top-3 right-3 z-30 flex items-center gap-1.5">
-                      <button
-                        type="button"
-                        onClick={(e) => handleShareClick(e, product)}
-                        className="p-2.5 bg-white/90 backdrop-blur-md rounded-full shadow-md hover:scale-110 active:scale-95 transition text-stone-700 hover:text-amber-600"
-                        title="Share Outfit"
-                      >
-                        <Share2 className="w-4 h-4" />
-                      </button>
+                    Browse All Outfits
+                  </button>
+                </div>
+              ) : (
+                displayedProducts.map((product) => {
+                  const isWishlisted = wishlist.some((w) => String(w.id) === String(product.id));
+                  const isSoldOut = product.stock === 0;
+                  const isLowStock = product.stock > 0 && product.stock <= 3;
 
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          toggleWishlist(product);
-                        }}
-                        className="p-2.5 bg-white/90 backdrop-blur-md rounded-full shadow-md hover:scale-110 active:scale-95 transition"
-                        title="Save to Wishlist"
-                      >
-                        <Heart className={`w-4 h-4 ${isWishlisted ? 'fill-rose-500 text-rose-500' : 'text-stone-700'}`} />
-                      </button>
-                    </div>
-
-                    <div className="relative h-80 sm:h-72 md:h-80 w-full bg-stone-100 overflow-hidden">
-                      <img
-                        src={product.image}
-                        alt={product.name}
-                        loading="lazy"
-                        className={`w-full h-full object-cover group-hover:scale-105 transition duration-500 ${isSoldOut ? 'grayscale brightness-75' : ''}`}
-                      />
-
-                      {/* Stock Badges */}
-                      {isSoldOut ? (
-                        <span className="absolute top-3 left-3 bg-stone-950 text-white text-[11px] font-black px-3.5 py-1 rounded-full uppercase tracking-wider shadow">
-                          SOLD OUT
-                        </span>
-                      ) : isLowStock ? (
-                        <span className="absolute top-3 left-3 bg-amber-500 text-stone-950 text-[11px] font-black px-3 py-1 rounded-full uppercase tracking-wider shadow flex items-center gap-1">
-                          <AlertTriangle className="w-3.5 h-3.5 text-stone-950" /> ONLY {product.stock} LEFT
-                        </span>
-                      ) : product.is_tiktok_featured ? (
-                        <span className="absolute top-3 left-3 bg-stone-900/90 text-amber-400 text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-wider shadow">
-                          TIKTOK REEL
-                        </span>
-                      ) : null}
-                    </div>
-
-                    <div className="p-5 flex-1 flex flex-col justify-between space-y-4">
-                      <div>
-                        <span className="text-[10px] font-bold text-amber-700 uppercase tracking-wider block mb-1">{product.category}</span>
-                        <h3 className="text-base sm:text-lg font-bold text-stone-900 truncate">{product.name}</h3>
-                        <p className="text-lg sm:text-xl font-black text-amber-600 mt-1">
-                          {formatCurrencyPrice(product.price)}
-                        </p>
-                      </div>
-
-                      {/* Uncongested Luxury Action Buttons */}
-                      <div className="grid grid-cols-2 gap-2.5 pt-1">
+                  return (
+                    <div
+                      key={product.id || product.name}
+                      onClick={() => openSingleProduct(product)}
+                      className="bg-white rounded-3xl overflow-hidden border border-stone-200/80 shadow-sm hover:shadow-xl transition duration-300 flex flex-col group relative cursor-pointer"
+                    >
+                      <div className="absolute top-3 right-3 z-30 flex items-center gap-1.5">
                         <button
+                          type="button"
+                          onClick={(e) => handleShareClick(e, product)}
+                          className="p-2.5 bg-white/90 backdrop-blur-md rounded-full shadow-md hover:scale-110 active:scale-95 transition text-stone-700 hover:text-amber-600"
+                          title="Share Outfit"
+                        >
+                          <Share2 className="w-4 h-4" />
+                        </button>
+
+                        <button
+                          type="button"
                           onClick={(e) => {
                             e.stopPropagation();
-                            openSingleProduct(product);
+                            toggleWishlist(product);
                           }}
-                          className="bg-stone-100 hover:bg-stone-200 text-stone-900 font-extrabold py-3 rounded-2xl text-xs flex items-center justify-center gap-1.5 transition"
+                          className="p-2.5 bg-white/90 backdrop-blur-md rounded-full shadow-md hover:scale-110 active:scale-95 transition"
+                          title="Save to Wishlist"
                         >
-                          <Eye className="w-4 h-4 text-amber-600" /> View Fit
-                        </button>
-                        
-                        <button
-                          disabled={isSoldOut}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            addToCart(product);
-                          }}
-                          className={`font-extrabold py-3 rounded-2xl text-xs flex items-center justify-center gap-1.5 transition shadow-md ${
-                            isSoldOut
-                              ? 'bg-stone-200 text-stone-400 cursor-not-allowed shadow-none'
-                              : 'bg-stone-900 hover:bg-black text-amber-400'
-                          }`}
-                        >
-                          <ShoppingCart className="w-4 h-4 text-amber-400" /> {isSoldOut ? 'Sold Out' : '+ Add Cart'}
+                          <Heart className={`w-4 h-4 ${isWishlisted ? 'fill-rose-500 text-rose-500' : 'text-stone-700'}`} />
                         </button>
                       </div>
+
+                      <div className="relative h-80 sm:h-72 md:h-80 w-full bg-stone-100 overflow-hidden">
+                        <img
+                          src={product.image}
+                          alt={product.name}
+                          loading="lazy"
+                          className={`w-full h-full object-cover group-hover:scale-105 transition duration-500 ${isSoldOut ? 'grayscale brightness-75' : ''}`}
+                        />
+
+                        {/* Stock Badges */}
+                        {isSoldOut ? (
+                          <span className="absolute top-3 left-3 bg-stone-950 text-white text-[11px] font-black px-3.5 py-1 rounded-full uppercase tracking-wider shadow">
+                            SOLD OUT
+                          </span>
+                        ) : isLowStock ? (
+                          <span className="absolute top-3 left-3 bg-amber-500 text-stone-950 text-[11px] font-black px-3 py-1 rounded-full uppercase tracking-wider shadow flex items-center gap-1">
+                            <AlertTriangle className="w-3.5 h-3.5 text-stone-950" /> ONLY {product.stock} LEFT
+                          </span>
+                        ) : product.is_tiktok_featured ? (
+                          <span className="absolute top-3 left-3 bg-stone-900/90 text-amber-400 text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-wider shadow">
+                            TIKTOK REEL
+                          </span>
+                        ) : null}
+                      </div>
+
+                      <div className="p-5 flex-1 flex flex-col justify-between space-y-4">
+                        <div>
+                          <span className="text-[10px] font-bold text-amber-700 uppercase tracking-wider block mb-1">{product.category}</span>
+                          <h3 className="text-base sm:text-lg font-bold text-stone-900 truncate">{product.name}</h3>
+                          <p className="text-lg sm:text-xl font-black text-amber-600 mt-1">
+                            {formatCurrencyPrice(product.price)}
+                          </p>
+                        </div>
+
+                        {/* Uncongested Luxury Action Buttons */}
+                        <div className="grid grid-cols-2 gap-2.5 pt-1">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              openSingleProduct(product);
+                            }}
+                            className="bg-stone-100 hover:bg-stone-200 text-stone-900 font-extrabold py-3 rounded-2xl text-xs flex items-center justify-center gap-1.5 transition"
+                          >
+                            <Eye className="w-4 h-4 text-amber-600" /> View Fit
+                          </button>
+                          
+                          <button
+                            disabled={isSoldOut}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              addToCart(product);
+                            }}
+                            className={`font-extrabold py-3 rounded-2xl text-xs flex items-center justify-center gap-1.5 transition shadow-md ${
+                              isSoldOut
+                                ? 'bg-stone-200 text-stone-400 cursor-not-allowed shadow-none'
+                                : 'bg-stone-900 hover:bg-black text-amber-400'
+                            }`}
+                          >
+                            <ShoppingCart className="w-4 h-4 text-amber-400" /> {isSoldOut ? 'Sold Out' : '+ Add Cart'}
+                          </button>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                );
-              })}
+                  );
+                })
+              )}
             </div>
 
             {/* Load More Outfits Pagination Button */}
@@ -889,7 +946,7 @@ export default function App() {
               </div>
               <div className="py-4 space-y-3 max-h-[70vh] overflow-y-auto">
                 {wishlist.length === 0 ? (
-                  <p className="text-sm text-stone-400 py-12 text-center">No saved dresses yet. Tap the icon on any dress to save!</p>
+                  <p className="text-sm text-stone-400 py-12 text-center">No saved dresses yet. Tap the heart icon on any dress to save!</p>
                 ) : (
                   wishlist.map((item) => (
                     <div key={item.id} className="flex items-center justify-between bg-stone-50 p-3.5 rounded-2xl border border-stone-200 gap-3">
@@ -924,7 +981,7 @@ export default function App() {
         </div>
       )}
 
-      {/* Cart Drawer */}
+      {/* Cart Drawer — With Dual Wishlist Access */}
       {isCartOpen && (
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex justify-end">
           <div className="bg-white max-w-md w-full h-full p-6 border-l border-stone-200 flex flex-col justify-between shadow-2xl">
@@ -933,7 +990,22 @@ export default function App() {
                 <h2 className="text-xl font-serif font-black text-stone-900">Your Shopping Cart ({cart.length})</h2>
                 <button onClick={() => setIsCartOpen(false)} className="text-stone-400 hover:text-stone-900 p-1">✕</button>
               </div>
-              <div className="py-4 space-y-3 max-h-[65vh] overflow-y-auto">
+
+              {/* Convenient Quick Link to Saved Wishlist inside Cart */}
+              <div className="pt-3">
+                <button
+                  onClick={() => {
+                    setIsCartOpen(false);
+                    setIsWishlistOpen(true);
+                  }}
+                  className="w-full bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold py-2 rounded-xl text-xs flex items-center justify-center gap-2 transition border border-rose-200"
+                >
+                  <Heart className="w-3.5 h-3.5 fill-rose-500 text-rose-500" />
+                  <span>View Saved Wishlist Outfits ({wishlist.length})</span>
+                </button>
+              </div>
+
+              <div className="py-4 space-y-3 max-h-[60vh] overflow-y-auto">
                 {cart.length === 0 ? (
                   <p className="text-sm text-stone-400 py-12 text-center">Your cart is currently empty.</p>
                 ) : (
