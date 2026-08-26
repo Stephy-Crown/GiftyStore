@@ -24,11 +24,11 @@ function TikTokIcon({ className = "w-5 h-5" }) {
   );
 }
 
-// Compact Logo Crest (Optimized for 365px Mobile Screens)
+// Elegant & Universally Harmonious Logo Crest (Works on Store & TikTok Tabs)
 function BrandLogoCrest() {
   return (
     <div className="flex items-center gap-1.5 sm:gap-2">
-      <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-xl bg-stone-950 shadow-md border border-amber-400/40 group-hover:scale-105 transition flex items-center justify-center">
+      <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-xl bg-gradient-to-tr from-stone-950 via-stone-900 to-amber-950 shadow-md border border-amber-400/40 group-hover:scale-105 transition flex items-center justify-center">
         <Crown className="w-3.5 h-3.5 sm:w-4.5 sm:h-4.5 text-amber-400 fill-amber-400" />
       </div>
       <div className="flex flex-col justify-center">
@@ -301,20 +301,20 @@ export default function App() {
         </div>
       )}
 
-      {/* Modern Uncongested Header Navbar with High-UX Icon & Text Labels for 365px Mobile Screens */}
+      {/* Streamlined Minimalist Header Navbar — Streamlined & Uncongested without Header Heart */}
       <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-stone-200/80 shadow-sm">
-        <div className="max-w-7xl mx-auto px-3 sm:px-6 md:px-8 py-2.5 sm:py-3 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-3.5 sm:px-6 md:px-8 py-2.5 sm:py-3 flex items-center justify-between">
           
           {/* Logo Mark */}
           <div onClick={handleLogoClick} className="cursor-pointer group" title="Triple tap for owner admin">
             <BrandLogoCrest />
           </div>
 
-          {/* High UX Navigation Buttons — Clear Micro-Labels Side-by-Side with Icons */}
-          <div className="flex items-center gap-1 sm:gap-2">
+          {/* Clean High-Fashion Navigation Buttons */}
+          <div className="flex items-center gap-1.5 sm:gap-2">
             <button
               onClick={() => setView('store')}
-              className={`px-2.5 py-1.5 sm:px-4 sm:py-2 rounded-full text-[11px] sm:text-xs font-black transition flex items-center gap-1 sm:gap-1.5 ${
+              className={`px-3 py-1.5 sm:px-4 sm:py-2 rounded-full text-xs font-black transition flex items-center gap-1.5 ${
                 view === 'store'
                   ? 'bg-stone-950 text-amber-400 shadow-md'
                   : 'text-stone-600 hover:text-stone-900 bg-stone-100'
@@ -327,7 +327,7 @@ export default function App() {
 
             <button
               onClick={() => setView('reels')}
-              className={`px-2.5 py-1.5 sm:px-4 sm:py-2 rounded-full text-[11px] sm:text-xs font-black transition flex items-center gap-1 sm:gap-1.5 ${
+              className={`px-3 py-1.5 sm:px-4 sm:py-2 rounded-full text-xs font-black transition flex items-center gap-1.5 ${
                 view === 'reels'
                   ? 'bg-rose-600 text-white shadow-md'
                   : 'text-stone-700 bg-rose-50 hover:bg-rose-100'
@@ -337,23 +337,10 @@ export default function App() {
               <TikTokIcon className="w-3.5 h-3.5 text-rose-600 fill-rose-600" />
               <span>TikTok</span>
             </button>
-
-            <button
-              onClick={() => setIsWishlistOpen(!isWishlistOpen)}
-              className="relative p-2 sm:p-2.5 bg-stone-100 hover:bg-stone-200 rounded-full text-stone-800 border border-stone-200 transition"
-              title="Saved Wishlist"
-            >
-              <Heart className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${wishlist.length > 0 ? 'fill-rose-500 text-rose-500' : ''}`} />
-              {wishlist.length > 0 && (
-                <span className="absolute -top-1 -right-1 bg-rose-600 text-white text-[10px] font-black rounded-full w-4 h-4 sm:w-4.5 sm:h-4.5 flex items-center justify-center shadow-lg ring-2 ring-white">
-                  {wishlist.length}
-                </span>
-              )}
-            </button>
             
             <button
               onClick={() => setIsCartOpen(!isCartOpen)}
-              className="relative p-2 sm:p-2.5 bg-stone-950 hover:bg-black text-amber-400 rounded-full shadow-md transition"
+              className="relative p-2 sm:p-2.5 bg-stone-950 hover:bg-black text-amber-400 rounded-full shadow-md transition ml-1"
               title="Shopping Cart"
             >
               <ShoppingCart className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-400" />
