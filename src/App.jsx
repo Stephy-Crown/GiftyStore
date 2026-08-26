@@ -469,13 +469,13 @@ export default function App() {
                 </button>
               </div>
 
-              {/* Filter Bar with Integrated Saved Wishlist Filter Tab */}
-              <div className="bg-white p-4 rounded-2xl border border-stone-200 shadow-sm flex flex-wrap items-center gap-4">
-                <div className="flex items-center gap-1.5 font-bold text-xs text-stone-700 mr-2">
-                  <SlidersHorizontal className="w-4 h-4 text-amber-600" /> Filter By:
-                </div>
+              {/* Filter Bar with Integrated Saved Wishlist Filter Tab & Side-by-side Dropdowns on Mobile */}
+              <div className="bg-white p-3.5 sm:p-4 rounded-2xl border border-stone-200 shadow-sm flex flex-col md:flex-row md:items-center gap-3 md:gap-4">
+                <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 md:pb-0">
+                  <div className="flex items-center gap-1 font-bold text-xs text-stone-700 mr-1 shrink-0">
+                    <SlidersHorizontal className="w-3.5 h-3.5 text-amber-600" /> Filter:
+                  </div>
 
-                <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
                   {categories.map((cat) => (
                     <button
                       key={cat}
@@ -483,7 +483,7 @@ export default function App() {
                         setActiveCategory(cat);
                         setVisibleCount(8);
                       }}
-                      className={`px-3.5 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition ${
+                      className={`px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition ${
                         activeCategory === cat
                           ? 'bg-amber-500 text-stone-950 font-black shadow-sm'
                           : 'bg-stone-100 text-stone-700 hover:bg-stone-200'
@@ -499,7 +499,7 @@ export default function App() {
                       setActiveCategory('Wishlist');
                       setVisibleCount(8);
                     }}
-                    className={`px-3.5 py-1.5 rounded-full text-xs font-extrabold whitespace-nowrap transition flex items-center gap-1.5 ${
+                    className={`px-3 py-1.5 rounded-full text-xs font-extrabold whitespace-nowrap transition flex items-center gap-1.5 ${
                       activeCategory === 'Wishlist'
                         ? 'bg-rose-600 text-white font-black shadow-md'
                         : 'bg-rose-50 text-rose-700 hover:bg-rose-100 border border-rose-200/60'
@@ -510,36 +510,39 @@ export default function App() {
                   </button>
                 </div>
 
-                <div className="flex items-center gap-1.5">
-                  <span className="text-[11px] font-bold text-stone-500">Size:</span>
-                  <select
-                    value={selectedSizeFilter}
-                    onChange={(e) => {
-                      setSelectedSizeFilter(e.target.value);
-                      setVisibleCount(8);
-                    }}
-                    className="bg-stone-100 border border-stone-200 text-xs font-bold rounded-xl px-3 py-1.5 text-stone-800 outline-none"
-                  >
-                    {sizesOptions.map((s) => (
-                      <option key={s} value={s}>{s}</option>
-                    ))}
-                  </select>
-                </div>
+                {/* Side-by-Side Size and Price Filters on Mobile */}
+                <div className="w-full md:w-auto grid grid-cols-2 md:flex md:items-center gap-2 pt-2 md:pt-0 border-t md:border-t-0 border-stone-100">
+                  <div className="flex items-center gap-1.5 bg-stone-50 md:bg-transparent p-1.5 md:p-0 rounded-xl border md:border-0 border-stone-200/80">
+                    <span className="text-[11px] font-bold text-stone-500 shrink-0">Size:</span>
+                    <select
+                      value={selectedSizeFilter}
+                      onChange={(e) => {
+                        setSelectedSizeFilter(e.target.value);
+                        setVisibleCount(8);
+                      }}
+                      className="bg-white md:bg-stone-100 border border-stone-200 text-xs font-bold rounded-xl px-2 py-1 text-stone-800 outline-none w-full"
+                    >
+                      {sizesOptions.map((s) => (
+                        <option key={s} value={s}>{s}</option>
+                      ))}
+                    </select>
+                  </div>
 
-                <div className="flex items-center gap-1.5">
-                  <span className="text-[11px] font-bold text-stone-500">Price:</span>
-                  <select
-                    value={selectedPriceFilter}
-                    onChange={(e) => {
-                      setSelectedPriceFilter(e.target.value);
-                      setVisibleCount(8);
-                    }}
-                    className="bg-stone-100 border border-stone-200 text-xs font-bold rounded-xl px-3 py-1.5 text-stone-800 outline-none"
-                  >
-                    {priceOptions.map((pr) => (
-                      <option key={pr} value={pr}>{pr}</option>
-                    ))}
-                  </select>
+                  <div className="flex items-center gap-1.5 bg-stone-50 md:bg-transparent p-1.5 md:p-0 rounded-xl border md:border-0 border-stone-200/80">
+                    <span className="text-[11px] font-bold text-stone-500 shrink-0">Price:</span>
+                    <select
+                      value={selectedPriceFilter}
+                      onChange={(e) => {
+                        setSelectedPriceFilter(e.target.value);
+                        setVisibleCount(8);
+                      }}
+                      className="bg-white md:bg-stone-100 border border-stone-200 text-xs font-bold rounded-xl px-2 py-1 text-stone-800 outline-none w-full"
+                    >
+                      {priceOptions.map((pr) => (
+                        <option key={pr} value={pr}>{pr}</option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
               </div>
             </div>
@@ -1034,7 +1037,7 @@ export default function App() {
                 </div>
                 <button
                   onClick={() => {
-                    setIsCartOpen(false);
+                    setIsCheckoutOpen(false);
                     setIsCheckoutOpen(true);
                   }}
                   className="w-full bg-stone-900 hover:bg-black text-white font-extrabold py-3.5 rounded-xl text-sm uppercase tracking-wider shadow-lg transition"
