@@ -4,7 +4,7 @@ import { getFashionProducts } from './services/supabase';
 import { TikTokShopSection } from './components/fashion/TikTokShopSection';
 import { AdminDashboard } from './pages/AdminDashboard';
 import CheckoutModal from './components/CheckoutModal';
-import { Crown, Diamond, Flame, Trash2, MapPin, ArrowRight, Heart, X, Share2, Copy, Send, Twitter, Store, ShoppingCart, SlidersHorizontal, Eye, ExternalLink, ChevronDown, AlertTriangle, Video } from 'lucide-react';
+import { Crown, Diamond, Flame, Trash2, MapPin, ArrowRight, Heart, X, Share2, Copy, Send, Twitter, Store, ShoppingCart, SlidersHorizontal, Eye, ExternalLink, ChevronDown, AlertTriangle, Sparkles } from 'lucide-react';
 
 // Official Standard WhatsApp SVG Icon
 function WhatsAppIcon({ className = "w-5 h-5" }) {
@@ -61,8 +61,7 @@ export default function App() {
     {
       id: 1,
       tag: "OWAMBE COUTURE",
-      title: "Slay In Every Room & Event",
-      subtitle: "Explore luxury corset gowns, silk two-piece sets, and viral dresses seen on TikTok.",
+      title: "Slay In Every Event",
       type: "video",
       videoUrl: "https://assets.mixkit.co/videos/preview/mixkit-fashion-model-walking-on-a-catwalk-41584-large.mp4",
       posterUrl: "https://images.unsplash.com/photo-1571513722275-4b41940f54b8?w=1920&auto=format&fit=crop&q=85",
@@ -72,7 +71,6 @@ export default function App() {
       id: 2,
       tag: "ROYAL VELVET",
       title: "Royal Velvet & Owambe Glamour",
-      subtitle: "Hand-crafted Nigerian Ankara & velvet lace tailored for Lagos wedding guests and VIP galas.",
       type: "image",
       imageUrl: "https://images.unsplash.com/photo-1571513722275-4b41940f54b8?w=1920&auto=format&fit=crop&q=85",
       cta: "Explore Owambe Fits"
@@ -80,8 +78,7 @@ export default function App() {
     {
       id: 3,
       tag: "VIRAL TIKTOK",
-      title: "Effortless Adire Silk Sets",
-      subtitle: "Flowy premium Abeokuta Adire silk two-piece sets with matching headscarves.",
+      title: "Adire Silk Sets",
       type: "image",
       imageUrl: "https://images.unsplash.com/photo-1589156280159-27698a70f29e?w=1920&auto=format&fit=crop&q=85",
       cta: "Shop Silk Sets"
@@ -89,8 +86,7 @@ export default function App() {
     {
       id: 4,
       tag: "ASO-EBI ELEGANCE",
-      title: "Nigerian Wedding & Gala Couture",
-      subtitle: "Custom fitted luxury gowns with structured corsets designed for Lagos VIP celebrations.",
+      title: "Lagos Wedding Couture",
       type: "image",
       imageUrl: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=1920&auto=format&fit=crop&q=85",
       cta: "Explore Couture Fits"
@@ -286,54 +282,52 @@ export default function App() {
         </div>
       )}
 
-      {/* Crystal Clear Mobile & Desktop Header Navbar */}
+      {/* Ultra-Clean Minimal Header Navbar */}
       <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-stone-200/80 shadow-sm">
-        <div className="max-w-7xl mx-auto px-3 sm:px-6 md:px-8 py-3 flex items-center justify-between gap-1.5 sm:gap-3">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 py-3.5 flex items-center justify-between">
           
           {/* Logo Badge: Gifty Store */}
-          <div onClick={handleLogoClick} className="flex items-center gap-1.5 sm:gap-3 cursor-pointer group shrink-0" title="Triple tap for owner admin">
+          <div onClick={handleLogoClick} className="flex items-center gap-2 sm:gap-3 cursor-pointer group" title="Triple tap for owner admin">
             <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-tr from-amber-500 via-amber-400 to-amber-200 text-stone-950 font-black flex items-center justify-center shadow-md group-hover:scale-105 transition">
               <Crown className="w-4 h-4 sm:w-5 sm:h-5 text-stone-950" />
             </div>
-            <div>
-              <span className="font-serif font-black text-stone-900 tracking-tight text-base sm:text-xl block leading-none">
-                {siteConfig.storeName}
-              </span>
-            </div>
+            <span className="font-serif font-black text-stone-900 tracking-tight text-lg sm:text-xl block leading-none">
+              {siteConfig.storeName}
+            </span>
           </div>
 
-          <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
-            
-            {/* Shop Tab Button */}
+          {/* Clean View Switcher */}
+          <div className="flex items-center bg-stone-100 p-1 rounded-full border border-stone-200/80">
             <button
               onClick={() => setView('store')}
-              className={`flex items-center gap-1 px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs font-extrabold transition shadow-sm ${
+              className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-extrabold transition ${
                 view === 'store'
-                  ? 'bg-stone-900 text-white shadow-stone-900/20'
-                  : 'bg-stone-100 text-stone-800 hover:bg-stone-200 border border-stone-200'
+                  ? 'bg-stone-900 text-amber-400 shadow'
+                  : 'text-stone-600 hover:text-stone-900'
               }`}
             >
-              <Store className="w-3.5 h-3.5 text-amber-400" />
+              <Store className="w-3.5 h-3.5" />
               <span>Shop</span>
             </button>
 
-            {/* TikTok Reels Button — Explicitly Labeled on Mobile as "TikTok Reels" */}
             <button
               onClick={() => setView('reels')}
-              className={`flex items-center gap-1 px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs font-extrabold transition shadow-sm ${
+              className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-extrabold transition ${
                 view === 'reels'
-                  ? 'bg-amber-500 text-stone-950 shadow-amber-500/20'
-                  : 'bg-stone-100 text-stone-800 hover:bg-amber-100 hover:text-amber-900 border border-stone-200'
+                  ? 'bg-rose-600 text-white shadow'
+                  : 'text-stone-600 hover:text-rose-600'
               }`}
             >
-              <TikTokIcon className="w-3.5 h-3.5 text-black" />
-              <span className="text-[11px] sm:text-xs">TikTok Reels</span>
+              <TikTokIcon className="w-3.5 h-3.5" />
+              <span>TikTok Deals</span>
             </button>
+          </div>
 
-            {/* Wishlist Button */}
+          {/* Action Icons (Wishlist & Cart Only) */}
+          <div className="flex items-center gap-2">
             <button
               onClick={() => setIsWishlistOpen(!isWishlistOpen)}
-              className="relative p-2 sm:p-2.5 bg-stone-100 hover:bg-stone-200 rounded-full text-stone-800 border border-stone-200 transition"
+              className="relative p-2.5 bg-stone-100 hover:bg-stone-200 rounded-full text-stone-800 border border-stone-200 transition"
               title="Saved Wishlist"
             >
               <Heart className={`w-4 h-4 ${wishlist.length > 0 ? 'fill-rose-500 text-rose-500' : ''}`} />
@@ -344,10 +338,9 @@ export default function App() {
               )}
             </button>
             
-            {/* Shopping Cart Button */}
             <button
               onClick={() => setIsCartOpen(!isCartOpen)}
-              className="relative p-2 sm:p-2.5 bg-stone-900 hover:bg-black text-amber-400 rounded-full shadow-md transition"
+              className="relative p-2.5 bg-stone-900 hover:bg-black text-amber-400 rounded-full shadow-md transition"
               title="Shopping Cart"
             >
               <ShoppingCart className="w-4 h-4 text-amber-400" />
@@ -365,8 +358,8 @@ export default function App() {
       {view === 'store' && (
         <main className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 py-6 space-y-10 md:space-y-14 overflow-x-hidden">
           
-          {/* Hero Banner */}
-          <div className="relative h-[370px] sm:h-[400px] md:h-[480px] rounded-3xl overflow-hidden shadow-2xl border border-stone-200 flex flex-col justify-end p-6 sm:p-10 md:p-12">
+          {/* Ultra-Clean High-Fashion Hero Banner */}
+          <div className="relative h-[340px] sm:h-[380px] md:h-[440px] rounded-3xl overflow-hidden shadow-2xl border border-stone-200 flex flex-col justify-end p-6 sm:p-10 md:p-12">
             {heroSlides.map((slide, idx) => (
               <div
                 key={slide.id}
@@ -395,7 +388,7 @@ export default function App() {
               </div>
             ))}
 
-            <div className="absolute inset-0 bg-gradient-to-t from-stone-950 via-stone-950/40 to-transparent pointer-events-none" />
+            <div className="absolute inset-0 bg-gradient-to-t from-stone-950 via-stone-950/35 to-transparent pointer-events-none" />
 
             <button
               onClick={(e) => handleShareClick(e, null)}
@@ -406,21 +399,15 @@ export default function App() {
 
             <div className="relative max-w-xl space-y-3 z-10 text-white">
               
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="bg-stone-950/90 backdrop-blur-md text-amber-300 text-[10px] sm:text-xs font-black px-3 py-1 rounded-full uppercase tracking-wider inline-flex items-center gap-1 border border-amber-400/30 shadow">
-                  <Diamond className="w-3 h-3 text-amber-400" /> FREE SHIPPING &gt; NGN 100K
-                </span>
-                <span className="bg-[#25D366] text-white text-[10px] sm:text-xs font-black px-3 py-1 rounded-full uppercase tracking-wider inline-flex items-center gap-1.5 shadow">
-                  <WhatsAppIcon className="w-3.5 h-3.5 fill-white" /> NEGOTIATE ON WHATSAPP
-                </span>
+              {/* Enticing Golden Luxury Shipping Badge */}
+              <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-amber-400 text-stone-950 font-black text-[11px] sm:text-xs tracking-wider shadow-xl border border-amber-300">
+                <Sparkles className="w-3.5 h-3.5 text-stone-950 fill-stone-950" />
+                <span>FREE EXPRESS SHIPPING OVER NGN 100,000</span>
               </div>
 
               <h1 className="text-2xl sm:text-4xl md:text-5xl font-serif font-black leading-tight text-white drop-shadow-md">
                 {heroSlides[currentSlide].title}
               </h1>
-              <p className="hidden sm:block text-xs md:text-sm text-stone-200 leading-relaxed max-w-md">
-                {heroSlides[currentSlide].subtitle}
-              </p>
               
               <div className="pt-1">
                 <button
