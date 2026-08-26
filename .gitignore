@@ -24,9 +24,13 @@ dist-ssr
 *.sln
 *.sw?
 
-# Environment variables
+# Environment variables & Secret Config
 .env
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
+
+# Private Internal Technical Documentation (Ignored from GitHub)
+TECHNICAL_ARCHITECTURE_DOCS.md
+PROJECT_DOCUMENTATION.md
