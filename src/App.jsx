@@ -24,6 +24,25 @@ function TikTokIcon({ className = "w-5 h-5" }) {
   );
 }
 
+// Compact Logo Crest (Optimized for 365px Mobile Screens)
+function BrandLogoCrest() {
+  return (
+    <div className="flex items-center gap-1.5 sm:gap-2">
+      <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-xl bg-stone-950 shadow-md border border-amber-400/40 group-hover:scale-105 transition flex items-center justify-center">
+        <Crown className="w-3.5 h-3.5 sm:w-4.5 sm:h-4.5 text-amber-400 fill-amber-400" />
+      </div>
+      <div className="flex flex-col justify-center">
+        <span className="font-serif font-black text-stone-950 tracking-[0.12em] sm:tracking-[0.15em] text-base sm:text-xl uppercase leading-none">
+          GIFTY
+        </span>
+        <span className="text-[7px] sm:text-[8px] font-extrabold tracking-[0.2em] sm:tracking-[0.25em] text-amber-600 uppercase block mt-0.5">
+          COUTURE
+        </span>
+      </div>
+    </div>
+  );
+}
+
 export function formatCurrencyPrice(amountInNGN) {
   return `NGN ${Math.round(Number(amountInNGN || 0)).toLocaleString()}`;
 }
@@ -219,7 +238,7 @@ export default function App() {
   const SharedFooter = () => (
     <footer className="mt-16 sm:mt-20 pt-10 sm:pt-14 border-t border-stone-200/80 grid grid-cols-1 md:grid-cols-3 gap-8 sm:gap-10 text-stone-700 overflow-hidden">
       <div className="space-y-4">
-        <h3 className="text-2xl font-serif font-black text-stone-900">GIFTY</h3>
+        <BrandLogoCrest />
         <p className="text-xs text-stone-500 leading-relaxed">
           Lagos' premier mobile & desktop boutique storefront. Serving style lovers in Nigeria, UK, USA, and worldwide.
         </p>
@@ -282,40 +301,38 @@ export default function App() {
         </div>
       )}
 
-      {/* High-Fashion Minimalist Header Navbar — "GIFTY" Clean Brand Mark */}
+      {/* Modern Uncongested Header Navbar with High-UX Icon & Text Labels for 365px Mobile Screens */}
       <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-stone-200/80 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 py-3.5 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 md:px-8 py-2.5 sm:py-3 flex items-center justify-between">
           
-          {/* Clean GIFTY Logo */}
-          <div onClick={handleLogoClick} className="flex items-center gap-2.5 cursor-pointer group" title="Triple tap for owner admin">
-            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-stone-950 text-amber-400 font-black flex items-center justify-center shadow-md group-hover:scale-105 transition">
-              <Crown className="w-5 h-5 text-amber-400" />
-            </div>
-            <span className="font-serif font-black text-stone-950 tracking-[0.2em] text-xl sm:text-2xl uppercase leading-none">
-              GIFTY
-            </span>
+          {/* Logo Mark */}
+          <div onClick={handleLogoClick} className="cursor-pointer group" title="Triple tap for owner admin">
+            <BrandLogoCrest />
           </div>
 
-          {/* Clean Action Navigation */}
-          <div className="flex items-center gap-2 sm:gap-3">
+          {/* High UX Navigation Buttons — Clear Micro-Labels Side-by-Side with Icons */}
+          <div className="flex items-center gap-1 sm:gap-2">
             <button
               onClick={() => setView('store')}
-              className={`px-4 py-2 rounded-full text-xs font-black transition ${
+              className={`px-2.5 py-1.5 sm:px-4 sm:py-2 rounded-full text-[11px] sm:text-xs font-black transition flex items-center gap-1 sm:gap-1.5 ${
                 view === 'store'
                   ? 'bg-stone-950 text-amber-400 shadow-md'
                   : 'text-stone-600 hover:text-stone-900 bg-stone-100'
               }`}
+              title="Boutique Shop Collection"
             >
-              Shop
+              <Store className="w-3.5 h-3.5 text-amber-400" />
+              <span>Shop</span>
             </button>
 
             <button
               onClick={() => setView('reels')}
-              className={`px-4 py-2 rounded-full text-xs font-black transition flex items-center gap-1.5 ${
+              className={`px-2.5 py-1.5 sm:px-4 sm:py-2 rounded-full text-[11px] sm:text-xs font-black transition flex items-center gap-1 sm:gap-1.5 ${
                 view === 'reels'
                   ? 'bg-rose-600 text-white shadow-md'
                   : 'text-stone-700 bg-rose-50 hover:bg-rose-100'
               }`}
+              title="Viral TikTok Deals"
             >
               <TikTokIcon className="w-3.5 h-3.5 text-rose-600 fill-rose-600" />
               <span>TikTok</span>
@@ -323,12 +340,12 @@ export default function App() {
 
             <button
               onClick={() => setIsWishlistOpen(!isWishlistOpen)}
-              className="relative p-2.5 bg-stone-100 hover:bg-stone-200 rounded-full text-stone-800 border border-stone-200 transition"
+              className="relative p-2 sm:p-2.5 bg-stone-100 hover:bg-stone-200 rounded-full text-stone-800 border border-stone-200 transition"
               title="Saved Wishlist"
             >
-              <Heart className={`w-4 h-4 ${wishlist.length > 0 ? 'fill-rose-500 text-rose-500' : ''}`} />
+              <Heart className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${wishlist.length > 0 ? 'fill-rose-500 text-rose-500' : ''}`} />
               {wishlist.length > 0 && (
-                <span className="absolute -top-1 -right-1 bg-rose-600 text-white text-[10px] font-black rounded-full w-4.5 h-4.5 flex items-center justify-center shadow-lg ring-2 ring-white">
+                <span className="absolute -top-1 -right-1 bg-rose-600 text-white text-[10px] font-black rounded-full w-4 h-4 sm:w-4.5 sm:h-4.5 flex items-center justify-center shadow-lg ring-2 ring-white">
                   {wishlist.length}
                 </span>
               )}
@@ -336,12 +353,12 @@ export default function App() {
             
             <button
               onClick={() => setIsCartOpen(!isCartOpen)}
-              className="relative p-2.5 bg-stone-950 hover:bg-black text-amber-400 rounded-full shadow-md transition"
+              className="relative p-2 sm:p-2.5 bg-stone-950 hover:bg-black text-amber-400 rounded-full shadow-md transition"
               title="Shopping Cart"
             >
-              <ShoppingCart className="w-4 h-4 text-amber-400" />
+              <ShoppingCart className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-400" />
               {cart.length > 0 && (
-                <span className="absolute -top-1 -right-1 bg-emerald-500 text-white text-[10px] font-black rounded-full w-4.5 h-4.5 flex items-center justify-center shadow-lg ring-2 ring-white animate-bounce">
+                <span className="absolute -top-1 -right-1 bg-emerald-500 text-white text-[10px] font-black rounded-full w-4 h-4 sm:w-4.5 sm:h-4.5 flex items-center justify-center shadow-lg ring-2 ring-white animate-bounce">
                   {cart.length}
                 </span>
               )}
