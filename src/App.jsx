@@ -4,7 +4,7 @@ import { getFashionProducts } from './services/supabase';
 import { TikTokShopSection } from './components/fashion/TikTokShopSection';
 import { AdminDashboard } from './pages/AdminDashboard';
 import CheckoutModal from './components/CheckoutModal';
-import { Crown, Diamond, Flame, Trash2, MapPin, ArrowRight, Heart, X, Share2, Copy, Send, Twitter, Store, ShoppingCart, SlidersHorizontal, Eye, ExternalLink, ChevronDown, AlertTriangle } from 'lucide-react';
+import { Crown, Diamond, Flame, Trash2, MapPin, ArrowRight, Heart, X, Share2, Copy, Send, Twitter, Store, ShoppingCart, SlidersHorizontal, Eye, ExternalLink, ChevronDown, AlertTriangle, Video } from 'lucide-react';
 
 // Official Standard WhatsApp SVG Icon
 function WhatsAppIcon({ className = "w-5 h-5" }) {
@@ -286,36 +286,28 @@ export default function App() {
         </div>
       )}
 
-      {/* Non-Overflowing Mobile & Desktop Header Navbar */}
+      {/* Crystal Clear Mobile & Desktop Header Navbar */}
       <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-stone-200/80 shadow-sm">
-        <div className="max-w-7xl mx-auto px-3 sm:px-6 md:px-8 py-3 flex items-center justify-between gap-2">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 md:px-8 py-3 flex items-center justify-between gap-1.5 sm:gap-3">
           
           {/* Logo Badge: Gifty Store */}
-          <div onClick={handleLogoClick} className="flex items-center gap-2 sm:gap-3 cursor-pointer group shrink-0" title="Triple tap for owner admin">
-            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-gradient-to-tr from-amber-500 via-amber-400 to-amber-200 text-stone-950 font-black flex items-center justify-center shadow-md group-hover:scale-105 transition">
-              <Crown className="w-4.5 h-4.5 sm:w-5 sm:h-5 text-stone-950" />
+          <div onClick={handleLogoClick} className="flex items-center gap-1.5 sm:gap-3 cursor-pointer group shrink-0" title="Triple tap for owner admin">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-tr from-amber-500 via-amber-400 to-amber-200 text-stone-950 font-black flex items-center justify-center shadow-md group-hover:scale-105 transition">
+              <Crown className="w-4 h-4 sm:w-5 sm:h-5 text-stone-950" />
             </div>
             <div>
-              <span className="font-serif font-black text-stone-900 tracking-tight text-lg sm:text-xl block leading-none">
+              <span className="font-serif font-black text-stone-900 tracking-tight text-base sm:text-xl block leading-none">
                 {siteConfig.storeName}
               </span>
             </div>
           </div>
 
           <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
-            {/* Currency Converter Commented Out to Focus 100% on Nigerian Market */}
-            {/* 
-            <div className="hidden sm:flex items-center gap-1 bg-stone-100 px-2.5 py-1.5 rounded-full border border-stone-200 text-xs font-bold text-stone-800">
-              <Globe className="w-3.5 h-3.5 text-amber-600" />
-              <select value={currency} onChange={(e) => setCurrency(e.target.value)}>
-                <option value="NGN">NGN (₦)</option>
-              </select>
-            </div>
-            */}
-
+            
+            {/* Shop Tab Button */}
             <button
               onClick={() => setView('store')}
-              className={`flex items-center gap-1 sm:gap-1.5 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs font-bold transition shadow-sm ${
+              className={`flex items-center gap-1 px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs font-extrabold transition shadow-sm ${
                 view === 'store'
                   ? 'bg-stone-900 text-white shadow-stone-900/20'
                   : 'bg-stone-100 text-stone-800 hover:bg-stone-200 border border-stone-200'
@@ -325,18 +317,20 @@ export default function App() {
               <span>Shop</span>
             </button>
 
+            {/* TikTok Reels Button — Explicitly Labeled on Mobile as "TikTok Reels" */}
             <button
               onClick={() => setView('reels')}
-              className={`flex items-center gap-1 sm:gap-1.5 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs font-bold transition shadow-sm ${
+              className={`flex items-center gap-1 px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs font-extrabold transition shadow-sm ${
                 view === 'reels'
                   ? 'bg-amber-500 text-stone-950 shadow-amber-500/20'
                   : 'bg-stone-100 text-stone-800 hover:bg-amber-100 hover:text-amber-900 border border-stone-200'
               }`}
             >
               <TikTokIcon className="w-3.5 h-3.5 text-black" />
-              <span className="hidden sm:inline">TikTok</span>
+              <span className="text-[11px] sm:text-xs">TikTok Reels</span>
             </button>
 
+            {/* Wishlist Button */}
             <button
               onClick={() => setIsWishlistOpen(!isWishlistOpen)}
               className="relative p-2 sm:p-2.5 bg-stone-100 hover:bg-stone-200 rounded-full text-stone-800 border border-stone-200 transition"
@@ -350,6 +344,7 @@ export default function App() {
               )}
             </button>
             
+            {/* Shopping Cart Button */}
             <button
               onClick={() => setIsCartOpen(!isCartOpen)}
               className="relative p-2 sm:p-2.5 bg-stone-900 hover:bg-black text-amber-400 rounded-full shadow-md transition"
