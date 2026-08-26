@@ -1,0 +1,9 @@
+{
+  "storeName": "Gifty Store",
+  "whatsappPhone": "2347062824754",
+  "paystackPublicKey": "pk_test_dummy_key_12345",
+  "lagosDeliveryFee": 2500,
+  "interstateDeliveryFee": 5000,
+  "freeShippingThreshold": 100000,
+  "defaultPin": "1234"
+}

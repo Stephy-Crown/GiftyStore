@@ -1,0 +1,57 @@
+[
+  {
+    "id": "prod-001",
+    "name": "Luxury Ankara Silk Corset Maxi Gown",
+    "price": 48000,
+    "category": "Owambe",
+    "image": "https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=800&auto=format&fit=crop&q=80",
+    "video_url": "https://assets.mixkit.co/videos/preview/mixkit-fashion-model-in-a-pink-dress-41424-large.mp4",
+    "sizes": ["S", "M", "L", "XL"],
+    "is_tiktok_featured": true,
+    "description": "Hand-stitched Nigerian Ankara print maxi gown with a structured corset waist and dramatic split."
+  },
+  {
+    "id": "prod-002",
+    "name": "Royal Aso-Ebi Velvet Lace Owambe Gown",
+    "price": 75000,
+    "category": "Owambe",
+    "image": "https://images.unsplash.com/photo-1539109136881-3be0616acf4b?w=800&auto=format&fit=crop&q=80",
+    "video_url": "https://assets.mixkit.co/videos/preview/mixkit-fashion-model-walking-on-a-catwalk-41584-large.mp4",
+    "sizes": ["UK 10", "UK 12", "UK 14", "UK 16"],
+    "is_tiktok_featured": true,
+    "description": "Exquisite beaded velvet lace gown tailored for wedding guests, Aso-ebi parties, and grand occasions."
+  },
+  {
+    "id": "prod-003",
+    "name": "Adire Silk Two-Piece Bubu Lounge Set",
+    "price": 38000,
+    "category": "Two-Piece",
+    "image": "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=800&auto=format&fit=crop&q=80",
+    "video_url": "https://assets.mixkit.co/videos/preview/mixkit-young-woman-in-a-fashionable-outfit-41581-large.mp4",
+    "sizes": ["Free Size (M - XXL)"],
+    "is_tiktok_featured": true,
+    "description": "Flowy premium Abeokuta Adire silk two-piece set with matching headscarf for effortless luxury."
+  },
+  {
+    "id": "prod-004",
+    "name": "Elegance Ankara Tailored Blazer & Pants Set",
+    "price": 42000,
+    "category": "Two-Piece",
+    "image": "https://images.unsplash.com/photo-1496747611176-843222e1e57c?w=800&auto=format&fit=crop&q=80",
+    "video_url": "https://assets.mixkit.co/videos/preview/mixkit-woman-modeling-a-summer-dress-41423-large.mp4",
+    "sizes": ["S", "M", "L"],
+    "is_tiktok_featured": true,
+    "description": "Vibrant African wax print structured blazer and high-waisted trousers."
+  },
+  {
+    "id": "prod-005",
+    "name": "Mikano Silk Wrap Dress with Gele Headwrap",
+    "price": 52000,
+    "category": "Corset Gowns",
+    "image": "https://images.unsplash.com/photo-1502716119720-b23a93e5fe1b?w=800&auto=format&fit=crop&q=80",
+    "video_url": "https://assets.mixkit.co/videos/preview/mixkit-model-posing-in-a-white-dress-41582-large.mp4",
+    "sizes": ["UK 8", "UK 10", "UK 12", "UK 14"],
+    "is_tiktok_featured": true,
+    "description": "Rich Mikano silk wrap dress featuring wide bell sleeves and auto-gele accessory."
+  }
+]
