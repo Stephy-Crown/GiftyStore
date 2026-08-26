@@ -1,5 +1,5 @@
 import React from 'react';
-import { ShoppingBag, Sparkles } from 'lucide-react';
+import { ShoppingBag, Sparkles, Flame, Tag } from 'lucide-react';
 import { formatCurrencyPrice } from '../../App';
 
 // Official TikTok SVG Vector Icon
@@ -11,39 +11,41 @@ function TikTokIcon({ className = "w-5 h-5" }) {
   );
 }
 
-export function TikTokShopSection({ products = [], onAddToCart, currency = 'NGN' }) {
+export function TikTokShopSection({ products = [], onAddToCart }) {
   const safeProducts = Array.isArray(products) ? products.filter(Boolean) : [];
   const reels = safeProducts.filter((p) => p.video_url || p.is_tiktok_featured);
   const displayReels = reels.length > 0 ? reels : safeProducts;
 
   return (
     <section className="py-6 space-y-6">
-      {/* Header */}
+      {/* Exclusive TikTok Header */}
       <div className="text-center space-y-2.5 px-4">
-        <div className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-rose-100 text-rose-600 font-extrabold text-xs tracking-wider uppercase shadow-sm">
-          <Sparkles className="w-3.5 h-3.5" />
-          <span>AS SEEN ON TIKTOK</span>
+        <div className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-rose-500 text-white font-black text-xs tracking-wider uppercase shadow-md">
+          <Flame className="w-3.5 h-3.5 fill-amber-300 text-amber-300" />
+          <span>VIRAL TIKTOK FITS & FOLLOWER DEALS</span>
         </div>
-        <h2 className="text-2xl md:text-4xl font-serif font-black text-stone-900">Shop The TikTok Outfits</h2>
+        <h2 className="text-2xl md:text-4xl font-serif font-black text-stone-900">
+          As Seen On @GiftyStore TikTok
+        </h2>
         <p className="text-xs md:text-sm text-stone-600 max-w-md mx-auto leading-relaxed">
-          Tap any outfit reel to watch in motion & order in 1-click!
+          Watch viral video reels in motion & order your dress with 1-click Paystack checkout or WhatsApp negotiation!
         </p>
 
-        {/* TikTok Follow Pill */}
-        <div className="pt-1.5">
+        {/* TikTok Follow & Discount Pill */}
+        <div className="pt-1.5 flex flex-wrap items-center justify-center gap-2">
           <a
             href="https://tiktok.com"
             target="_blank"
             rel="noreferrer"
-            className="inline-flex items-center gap-2.5 px-5 py-2.5 rounded-full bg-stone-900 text-white text-xs font-bold hover:bg-black transition shadow-lg hover:scale-105 active:scale-95"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-stone-900 text-white text-xs font-bold hover:bg-black transition shadow-lg hover:scale-105 active:scale-95"
           >
             <TikTokIcon className="w-4 h-4 text-rose-400" />
-            <span>Follow @GiftyStore on TikTok (150K+ Followers)</span>
+            <span>Follow @GiftyStore on TikTok (150K+ Community)</span>
           </a>
         </div>
       </div>
 
-      {/* Grid of Vertical TikTok Cards */}
+      {/* Grid of Vertical TikTok Video Reel Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto px-4">
         {displayReels.map((reel) => (
           <div
@@ -68,14 +70,21 @@ export function TikTokShopSection({ products = [], onAddToCart, currency = 'NGN'
               />
             )}
 
+            {/* Top Badge: TikTok Special */}
+            <div className="absolute top-3 left-3 z-20 flex items-center gap-1.5">
+              <span className="bg-rose-600/90 backdrop-blur-md text-white font-extrabold text-[10px] px-3 py-1 rounded-full uppercase shadow flex items-center gap-1">
+                <Tag className="w-3 h-3 text-amber-300" /> TIKTOK SPECIAL DEAL
+              </span>
+            </div>
+
             {/* Bottom Overlay Card */}
-            <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-stone-950 via-stone-950/85 to-transparent p-6 flex flex-col justify-end text-white z-10">
-              <span className="text-[10px] bg-rose-600 text-white font-extrabold px-3 py-1 rounded-full w-fit uppercase tracking-wider mb-2 shadow">
-                TIKTOK REEL
+            <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-stone-950 via-stone-950/90 to-transparent p-6 flex flex-col justify-end text-white z-10">
+              <span className="text-[10px] bg-amber-500 text-stone-950 font-black px-3 py-1 rounded-full w-fit uppercase tracking-wider mb-2 shadow">
+                VIRAL REEL FASHION
               </span>
               <h3 className="text-lg font-bold leading-snug">{reel.name}</h3>
               <span className="text-xl font-black text-amber-400 my-1">
-                {formatCurrencyPrice(reel.price, currency)}
+                {formatCurrencyPrice(reel.price)}
               </span>
 
               <div className="grid grid-cols-2 gap-2 mt-3">
