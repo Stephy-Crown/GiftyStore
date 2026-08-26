@@ -4,7 +4,7 @@ import { getFashionProducts } from './services/supabase';
 import { TikTokShopSection } from './components/fashion/TikTokShopSection';
 import { AdminDashboard } from './pages/AdminDashboard';
 import CheckoutModal from './components/CheckoutModal';
-import { Crown, Diamond, Flame, Trash2, MapPin, ArrowRight, Heart, X, Share2, Copy, Send, Twitter, Store, ShoppingCart, SlidersHorizontal, Eye, ExternalLink, ChevronDown, Globe, AlertTriangle } from 'lucide-react';
+import { Crown, Diamond, Flame, Trash2, MapPin, ArrowRight, Heart, X, Share2, Copy, Send, Twitter, Store, ShoppingCart, SlidersHorizontal, Eye, ExternalLink, ChevronDown, AlertTriangle } from 'lucide-react';
 
 // Official Standard WhatsApp SVG Icon
 function WhatsAppIcon({ className = "w-5 h-5" }) {
@@ -24,22 +24,8 @@ function TikTokIcon({ className = "w-5 h-5" }) {
   );
 }
 
-// Exchange Rates relative to NGN
-const CURRENCY_RATES = {
-  NGN: { symbol: 'NGN', rate: 1, prefix: 'NGN ' },
-  USD: { symbol: 'USD', rate: 0.00065, prefix: '$' },
-  GBP: { symbol: 'GBP', rate: 0.00051, prefix: '£' },
-  EUR: { symbol: 'EUR', rate: 0.00060, prefix: '€' },
-};
-
-export function formatCurrencyPrice(amountInNGN, selectedCurrency = 'NGN') {
-  const curr = CURRENCY_RATES[selectedCurrency] || CURRENCY_RATES.NGN;
-  const converted = Number(amountInNGN || 0) * curr.rate;
-  
-  if (selectedCurrency === 'NGN') {
-    return `NGN ${Math.round(converted).toLocaleString()}`;
-  }
-  return `${curr.prefix}${converted.toFixed(2)}`;
+export function formatCurrencyPrice(amountInNGN) {
+  return `NGN ${Math.round(Number(amountInNGN || 0)).toLocaleString()}`;
 }
 
 export default function App() {
@@ -48,9 +34,6 @@ export default function App() {
   const [wishlist, setWishlist] = useState([]);
   const [view, setView] = useState('store'); // 'store' | 'reels' | 'admin'
   const [activeCategory, setActiveCategory] = useState('All');
-  
-  // Multi-Currency Converter State ('NGN' default for Nigerian market)
-  const [currency, setCurrency] = useState('NGN');
 
   // Size & Price Filters
   const [selectedSizeFilter, setSelectedSizeFilter] = useState('All');
@@ -125,7 +108,6 @@ export default function App() {
     async function loadData() {
       const data = await getFashionProducts();
       if (Array.isArray(data)) {
-        // Ensure stock numbers are attached
         const initialized = data.filter(Boolean).map((item, index) => ({
           ...item,
           stock: item.stock !== undefined ? item.stock : (index === 2 ? 0 : index === 5 ? 2 : 5),
@@ -239,7 +221,7 @@ export default function App() {
 
   // Reusable Public Footer Component
   const SharedFooter = () => (
-    <footer className="mt-20 pt-14 border-t border-stone-200/80 grid grid-cols-1 md:grid-cols-3 gap-10 text-stone-700">
+    <footer className="mt-16 sm:mt-20 pt-10 sm:pt-14 border-t border-stone-200/80 grid grid-cols-1 md:grid-cols-3 gap-8 sm:gap-10 text-stone-700 overflow-hidden">
       <div className="space-y-4">
         <h3 className="text-2xl font-serif font-black text-stone-900">{siteConfig.storeName}</h3>
         <p className="text-xs text-stone-500 leading-relaxed">
@@ -277,7 +259,7 @@ export default function App() {
         </div>
       </div>
 
-      <div className="h-52 rounded-3xl overflow-hidden border border-stone-200 shadow-md relative group">
+      <div className="h-48 sm:h-52 rounded-3xl overflow-hidden border border-stone-200 shadow-md relative group">
         <iframe
           title="Google Store Location Map"
           src="https://maps.google.com/maps?q=Suite%2014%2C%20Luxury%20Fashion%20Plaza%2C%20Lekki%20Phase%201%2C%20Lagos%2C%20Nigeria&t=&z=15&ie=UTF8&iwloc=&output=embed"
@@ -289,14 +271,14 @@ export default function App() {
         ></iframe>
       </div>
 
-      <div className="col-span-1 md:col-span-3 pt-8 border-t border-stone-200/60 text-center text-[11px] text-stone-400">
+      <div className="col-span-1 md:col-span-3 pt-6 sm:pt-8 border-t border-stone-200/60 text-center text-[11px] text-stone-400">
         © 2026 Gifty Store. All rights reserved. Built for Luxury Fashion.
       </div>
     </footer>
   );
 
   return (
-    <div className="min-h-screen bg-[#FAF7F5] text-stone-900 font-sans selection:bg-amber-400 selection:text-black relative pb-12">
+    <div className="min-h-screen bg-[#FAF7F5] text-stone-900 font-sans selection:bg-amber-400 selection:text-black relative pb-12 overflow-x-hidden w-full">
       {/* Toast Notification */}
       {toastMessage && (
         <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-stone-900 text-white px-5 py-3 rounded-full shadow-2xl text-xs font-bold flex items-center gap-2 border border-stone-800 animate-bounce">
@@ -304,41 +286,36 @@ export default function App() {
         </div>
       )}
 
-      {/* Header Navbar */}
+      {/* Non-Overflowing Mobile & Desktop Header Navbar */}
       <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-stone-200/80 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 py-3.5 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 md:px-8 py-3 flex items-center justify-between gap-2">
           
           {/* Logo Badge: Gifty Store */}
-          <div onClick={handleLogoClick} className="flex items-center gap-3 cursor-pointer group" title="Triple tap for owner admin">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-amber-500 via-amber-400 to-amber-200 text-stone-950 font-black flex items-center justify-center shadow-md group-hover:scale-105 transition">
-              <Crown className="w-5 h-5 text-stone-950" />
+          <div onClick={handleLogoClick} className="flex items-center gap-2 sm:gap-3 cursor-pointer group shrink-0" title="Triple tap for owner admin">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-gradient-to-tr from-amber-500 via-amber-400 to-amber-200 text-stone-950 font-black flex items-center justify-center shadow-md group-hover:scale-105 transition">
+              <Crown className="w-4.5 h-4.5 sm:w-5 sm:h-5 text-stone-950" />
             </div>
             <div>
-              <span className="font-serif font-black text-stone-900 tracking-tight text-xl block leading-none">
+              <span className="font-serif font-black text-stone-900 tracking-tight text-lg sm:text-xl block leading-none">
                 {siteConfig.storeName}
               </span>
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
-            {/* Multi-Currency Switcher Dropdown */}
-            <div className="flex items-center gap-1 bg-stone-100 px-2.5 py-1.5 rounded-full border border-stone-200 text-xs font-bold text-stone-800">
+          <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
+            {/* Currency Converter Commented Out to Focus 100% on Nigerian Market */}
+            {/* 
+            <div className="hidden sm:flex items-center gap-1 bg-stone-100 px-2.5 py-1.5 rounded-full border border-stone-200 text-xs font-bold text-stone-800">
               <Globe className="w-3.5 h-3.5 text-amber-600" />
-              <select
-                value={currency}
-                onChange={(e) => setCurrency(e.target.value)}
-                className="bg-transparent outline-none cursor-pointer font-black text-stone-900"
-              >
+              <select value={currency} onChange={(e) => setCurrency(e.target.value)}>
                 <option value="NGN">NGN (₦)</option>
-                <option value="USD">USD ($)</option>
-                <option value="GBP">GBP (£)</option>
-                <option value="EUR">EUR (€)</option>
               </select>
             </div>
+            */}
 
             <button
               onClick={() => setView('store')}
-              className={`flex items-center gap-1.5 px-3 md:px-4 py-2 rounded-full text-xs font-bold transition shadow-sm ${
+              className={`flex items-center gap-1 sm:gap-1.5 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs font-bold transition shadow-sm ${
                 view === 'store'
                   ? 'bg-stone-900 text-white shadow-stone-900/20'
                   : 'bg-stone-100 text-stone-800 hover:bg-stone-200 border border-stone-200'
@@ -350,7 +327,7 @@ export default function App() {
 
             <button
               onClick={() => setView('reels')}
-              className={`flex items-center gap-1.5 px-3 md:px-4 py-2 rounded-full text-xs font-bold transition shadow-sm ${
+              className={`flex items-center gap-1 sm:gap-1.5 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs font-bold transition shadow-sm ${
                 view === 'reels'
                   ? 'bg-amber-500 text-stone-950 shadow-amber-500/20'
                   : 'bg-stone-100 text-stone-800 hover:bg-amber-100 hover:text-amber-900 border border-stone-200'
@@ -362,12 +339,12 @@ export default function App() {
 
             <button
               onClick={() => setIsWishlistOpen(!isWishlistOpen)}
-              className="relative p-2.5 bg-stone-100 hover:bg-stone-200 rounded-full text-stone-800 border border-stone-200 transition"
+              className="relative p-2 sm:p-2.5 bg-stone-100 hover:bg-stone-200 rounded-full text-stone-800 border border-stone-200 transition"
               title="Saved Wishlist"
             >
               <Heart className={`w-4 h-4 ${wishlist.length > 0 ? 'fill-rose-500 text-rose-500' : ''}`} />
               {wishlist.length > 0 && (
-                <span className="absolute -top-1.5 -right-1.5 bg-rose-600 text-white text-[11px] font-black rounded-full w-5 h-5 flex items-center justify-center shadow-lg animate-pulse ring-2 ring-white">
+                <span className="absolute -top-1 -right-1 bg-rose-600 text-white text-[10px] font-black rounded-full w-4.5 h-4.5 flex items-center justify-center shadow-lg animate-pulse ring-2 ring-white">
                   {wishlist.length}
                 </span>
               )}
@@ -375,12 +352,12 @@ export default function App() {
             
             <button
               onClick={() => setIsCartOpen(!isCartOpen)}
-              className="relative p-2.5 bg-stone-900 hover:bg-black text-amber-400 rounded-full shadow-md transition"
+              className="relative p-2 sm:p-2.5 bg-stone-900 hover:bg-black text-amber-400 rounded-full shadow-md transition"
               title="Shopping Cart"
             >
-              <ShoppingCart className="w-4.5 h-4.5 text-amber-400" />
+              <ShoppingCart className="w-4 h-4 text-amber-400" />
               {cart.length > 0 && (
-                <span className="absolute -top-1.5 -right-1.5 bg-emerald-500 text-white text-[11px] font-black rounded-full w-5 h-5 flex items-center justify-center shadow-lg ring-2 ring-white animate-bounce">
+                <span className="absolute -top-1 -right-1 bg-emerald-500 text-white text-[10px] font-black rounded-full w-4.5 h-4.5 flex items-center justify-center shadow-lg ring-2 ring-white animate-bounce">
                   {cart.length}
                 </span>
               )}
@@ -391,7 +368,7 @@ export default function App() {
 
       {/* Main Storefront View */}
       {view === 'store' && (
-        <main className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 py-6 space-y-10 md:space-y-14">
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 py-6 space-y-10 md:space-y-14 overflow-x-hidden">
           
           {/* Hero Banner */}
           <div className="relative h-[370px] sm:h-[400px] md:h-[480px] rounded-3xl overflow-hidden shadow-2xl border border-stone-200 flex flex-col justify-end p-6 sm:p-10 md:p-12">
@@ -474,7 +451,7 @@ export default function App() {
           </div>
 
           {/* TikTok Shop Section */}
-          <TikTokShopSection products={safeProducts} onAddToCart={addToCart} currency={currency} />
+          <TikTokShopSection products={safeProducts} onAddToCart={addToCart} />
 
           {/* Catalog Grid with Size & Price Filters */}
           <div className="space-y-6 pt-6 border-t border-stone-200">
@@ -610,7 +587,7 @@ export default function App() {
                         <span className="text-[10px] font-bold text-amber-700 uppercase tracking-wider">{product.category}</span>
                         <h3 className="text-sm md:text-base font-bold text-stone-900 truncate mt-0.5">{product.name}</h3>
                         <p className="text-base md:text-lg font-black text-amber-600 mt-1">
-                          {formatCurrencyPrice(product.price, currency)}
+                          {formatCurrencyPrice(product.price)}
                         </p>
                       </div>
 
@@ -667,15 +644,15 @@ export default function App() {
 
       {/* TikTok Reels View */}
       {view === 'reels' && (
-        <main className="max-w-7xl mx-auto px-4 py-8">
-          <TikTokShopSection products={safeProducts} onAddToCart={addToCart} currency={currency} />
+        <main className="max-w-7xl mx-auto px-4 py-8 overflow-x-hidden">
+          <TikTokShopSection products={safeProducts} onAddToCart={addToCart} />
           <SharedFooter />
         </main>
       )}
 
       {/* Secret Encrypted Admin View */}
       {view === 'admin' && (
-        <main className="max-w-7xl mx-auto px-4 py-8">
+        <main className="max-w-7xl mx-auto px-4 py-8 overflow-x-hidden">
           <AdminDashboard products={safeProducts} setProducts={setProducts} />
         </main>
       )}
@@ -786,7 +763,7 @@ export default function App() {
                   </span>
                   <h2 className="text-xl md:text-2xl font-serif font-black text-stone-900 mt-2">{singleProduct.name}</h2>
                   <p className="text-2xl font-black text-amber-600 mt-1">
-                    {formatCurrencyPrice(singleProduct.price, currency)}
+                    {formatCurrencyPrice(singleProduct.price)}
                   </p>
                   <p className="text-xs text-stone-500 mt-3 leading-relaxed">
                     {singleProduct.description || "Hand-crafted luxury Nigerian couture designed for high elegance, Owambe parties, and VIP occasions."}
@@ -883,7 +860,7 @@ export default function App() {
                 </span>
                 <h4 className="font-bold text-xs text-stone-900 truncate">{shareItem.name}</h4>
                 {shareItem.price > 0 && (
-                  <p className="text-xs font-black text-amber-600 mt-0.5">{formatCurrencyPrice(shareItem.price, currency)}</p>
+                  <p className="text-xs font-black text-amber-600 mt-0.5">{formatCurrencyPrice(shareItem.price)}</p>
                 )}
               </div>
             </div>
@@ -938,7 +915,7 @@ export default function App() {
                       <img src={item.image} alt={item.name} loading="lazy" className="w-12 h-14 object-cover rounded-xl shadow-sm" />
                       <div className="flex-1">
                         <p className="font-bold text-xs text-stone-900">{item.name}</p>
-                        <p className="text-xs font-black text-amber-600">{formatCurrencyPrice(item.price, currency)}</p>
+                        <p className="text-xs font-black text-amber-600">{formatCurrencyPrice(item.price)}</p>
                       </div>
                       <div className="flex items-center gap-2">
                         <button
@@ -983,10 +960,10 @@ export default function App() {
                     <div key={item.id} className="flex justify-between items-center text-xs md:text-sm bg-stone-50 p-3.5 rounded-2xl border border-stone-200">
                       <div>
                         <p className="font-bold text-stone-900">{item.name} {item.size && `(Size: ${item.size})`}</p>
-                        <p className="text-stone-500 mt-0.5">Qty: {item.quantity} × {formatCurrencyPrice(item.price, currency)}</p>
+                        <p className="text-stone-500 mt-0.5">Qty: {item.quantity} × {formatCurrencyPrice(item.price)}</p>
                       </div>
                       <div className="flex items-center gap-3">
-                        <span className="font-black text-amber-600">{formatCurrencyPrice(item.price * item.quantity, currency)}</span>
+                        <span className="font-black text-amber-600">{formatCurrencyPrice(item.price * item.quantity)}</span>
                         <button onClick={() => removeFromCart(item.id)} className="text-rose-500 hover:bg-rose-50 p-1.5 rounded-lg">
                           <Trash2 className="w-4 h-4" />
                         </button>
@@ -1000,7 +977,7 @@ export default function App() {
               <div className="border-t border-stone-200 pt-4 space-y-3">
                 <div className="flex justify-between font-bold text-base">
                   <span>Cart Subtotal</span>
-                  <span className="text-amber-600 font-black">{formatCurrencyPrice(cartSubtotal, currency)}</span>
+                  <span className="text-amber-600 font-black">{formatCurrencyPrice(cartSubtotal)}</span>
                 </div>
                 <button
                   onClick={() => {
