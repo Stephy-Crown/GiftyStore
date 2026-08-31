@@ -61,7 +61,7 @@ export default function App() {
   // Lazy Loading / Pagination State (Display 8 products at a time)
   const [visibleCount, setVisibleCount] = useState(8);
 
-  // Single Product Modal View
+  // Single Product Modal View State
   const [singleProduct, setSingleProduct] = useState(null);
   const [selectedAngleMedia, setSelectedAngleMedia] = useState('main');
   const [selectedSize, setSelectedSize] = useState('M');
@@ -112,6 +112,41 @@ export default function App() {
     }
   ];
 
+  // URL Query Sync & History Helper Functions
+  const updateUrl = (targetView, productId = null) => {
+    const url = new URL(window.location.href);
+    if (targetView) url.searchParams.set('view', targetView);
+    else url.searchParams.delete('view');
+
+    if (productId) url.searchParams.set('product', productId);
+    else url.searchParams.delete('product');
+
+    window.history.pushState({ view: targetView, product: productId }, '', url.toString());
+  };
+
+  const navigateToView = (newView) => {
+    setView(newView);
+    updateUrl(newView, singleProduct?.id || null);
+  };
+
+  const openSingleProduct = (product, shouldUpdateUrl = true) => {
+    if (!product) return;
+    setSingleProduct(product);
+    setSelectedAngleMedia('main');
+    setSelectedSize(product.sizes?.[0] || 'M');
+    if (shouldUpdateUrl) {
+      updateUrl(view, product.id);
+    }
+  };
+
+  const closeSingleProduct = (shouldUpdateUrl = true) => {
+    setSingleProduct(null);
+    if (shouldUpdateUrl) {
+      updateUrl(view, null);
+    }
+  };
+
+  // Automated Hero Slide Timer
   useEffect(() => {
     const slideInterval = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % heroSlides.length);
@@ -119,6 +154,7 @@ export default function App() {
     return () => clearInterval(slideInterval);
   }, []);
 
+  // Initial Products Loading & Browser Back/Forward URL Sync Listener
   useEffect(() => {
     async function loadData() {
       const data = await getFashionProducts();
@@ -131,15 +167,39 @@ export default function App() {
       }
     }
     loadData();
-
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('key') === 'x9k82m_gifty_admin_sec2026' || urlParams.get('admin') === 'true') {
-      setView('admin');
-    }
-    if (urlParams.get('checkout') === 'true' || urlParams.get('discountedPrice')) {
-      setIsCheckoutOpen(true);
-    }
   }, []);
+
+  // Sync State with Browser URL Parameters (Deep-Linking & Back/Forward Support)
+  useEffect(() => {
+    const syncStateFromUrl = () => {
+      const params = new URLSearchParams(window.location.search);
+      const viewParam = params.get('view');
+      const productParam = params.get('product');
+
+      if (viewParam === 'reels' || viewParam === 'admin' || viewParam === 'store') {
+        setView(viewParam);
+      } else if (params.get('key') === 'x9k82m_gifty_admin_sec2026' || params.get('admin') === 'true') {
+        setView('admin');
+      }
+
+      if (params.get('checkout') === 'true' || params.get('discountedPrice')) {
+        setIsCheckoutOpen(true);
+      }
+
+      if (productParam && products.length > 0) {
+        const found = products.find((p) => String(p.id) === String(productParam));
+        if (found) {
+          openSingleProduct(found, false);
+        }
+      } else if (!productParam) {
+        setSingleProduct(null);
+      }
+    };
+
+    syncStateFromUrl();
+    window.addEventListener('popstate', syncStateFromUrl);
+    return () => window.removeEventListener('popstate', syncStateFromUrl);
+  }, [products]);
 
   const showToast = (msg, action) => {
     setToastMessage({ text: msg, action });
@@ -150,11 +210,11 @@ export default function App() {
     const newCount = logoTapCount + 1;
     setLogoTapCount(newCount);
     if (newCount >= 3) {
-      setView('admin');
+      navigateToView('admin');
       setLogoTapCount(0);
       showToast('Secret Owner Admin Portal Unlocked!');
     } else {
-      setView('store');
+      navigateToView('store');
       setTimeout(() => setLogoTapCount(0), 2000);
     }
   };
@@ -224,20 +284,16 @@ export default function App() {
 
   const handleShareClick = (e, item) => {
     if (e) e.stopPropagation();
-    setShareItem(item || { name: 'GIFTY', price: 0, image: 'https://images.unsplash.com/photo-1571513722275-4b41940f54b8?w=600' });
+    setShareItem(item || { id: null, name: 'GIFTY Couture', price: 0, image: 'https://images.unsplash.com/photo-1571513722275-4b41940f54b8?w=600' });
   };
 
   const copyToClipboard = () => {
-    navigator.clipboard.writeText(window.location.href);
-    showToast('Direct website link copied to clipboard!');
+    const shareUrl = shareItem?.id 
+      ? `${window.location.origin}${window.location.pathname}?product=${shareItem.id}`
+      : window.location.href;
+    navigator.clipboard.writeText(shareUrl);
+    showToast('Direct dress link copied to clipboard!');
     setShareItem(null);
-  };
-
-  const openSingleProduct = (product) => {
-    if (!product) return;
-    setSingleProduct(product);
-    setSelectedAngleMedia('main');
-    setSelectedSize(product.sizes?.[0] || 'M');
   };
 
   const cartSubtotal = cart.reduce((sum, item) => sum + (item.price || 0) * (item.quantity || 1), 0);
@@ -317,7 +373,7 @@ export default function App() {
         </div>
       )}
 
-      {/* 100% Uncongested Ultra-Clean Header Navbar (Only Logo, Shop, TikTok, and Cart) */}
+      {/* Uncongested Ultra-Clean Header Navbar with Full URL Navigation */}
       <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-stone-200/80 shadow-sm">
         <div className="max-w-7xl mx-auto px-3.5 sm:px-6 md:px-8 py-2.5 sm:py-3 flex items-center justify-between">
           
@@ -326,10 +382,10 @@ export default function App() {
             <BrandLogoCrest />
           </div>
 
-          {/* Uncongested 3-Button Header Navigation */}
+          {/* Uncongested 3-Button Header Navigation with URL Sync */}
           <div className="flex items-center gap-1.5 sm:gap-2">
             <button
-              onClick={() => setView('store')}
+              onClick={() => navigateToView('store')}
               className={`px-3 py-1.5 sm:px-4 sm:py-2 rounded-full text-xs font-black transition flex items-center gap-1.5 ${
                 view === 'store'
                   ? 'bg-stone-950 text-amber-400 shadow-md'
@@ -342,7 +398,7 @@ export default function App() {
             </button>
 
             <button
-              onClick={() => setView('reels')}
+              onClick={() => navigateToView('reels')}
               className={`px-3 py-1.5 sm:px-4 sm:py-2 rounded-full text-xs font-black transition flex items-center gap-1.5 ${
                 view === 'reels'
                   ? 'bg-rose-600 text-white shadow-md'
@@ -426,7 +482,7 @@ export default function App() {
               
               <div className="pt-1">
                 <button
-                  onClick={() => setView('reels')}
+                  onClick={() => navigateToView('reels')}
                   className="bg-amber-500 hover:bg-amber-400 text-stone-950 font-black px-6 py-3 rounded-full text-xs sm:text-sm inline-flex items-center gap-2 shadow-2xl hover:scale-105 transition uppercase tracking-wider"
                 >
                   {heroSlides[currentSlide].cta} <ArrowRight className="w-4 h-4 text-stone-950" />
@@ -710,13 +766,14 @@ export default function App() {
         <span className="hidden md:inline">Chat with Us</span>
       </a>
 
-      {/* Single Product Full Details Modal */}
+      {/* Single Product Full Details Modal with URL & History Sync */}
       {singleProduct && (
         <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto">
           <div className="bg-white rounded-3xl max-w-2xl w-full p-6 md:p-8 space-y-6 shadow-2xl relative my-8 animate-in fade-in zoom-in duration-200 max-h-[90vh] overflow-y-auto">
             <button
-              onClick={() => setSingleProduct(null)}
+              onClick={() => closeSingleProduct()}
               className="absolute right-5 top-5 bg-stone-100 text-stone-500 hover:text-stone-900 p-2 rounded-full shadow transition"
+              title="Close Dress Details"
             >
               <X className="w-6 h-6" />
             </button>
@@ -799,9 +856,19 @@ export default function App() {
 
               <div className="space-y-4 flex flex-col justify-between">
                 <div>
-                  <span className="bg-amber-100 text-amber-900 text-[10px] font-black uppercase px-3 py-1 rounded-full">
-                    {singleProduct.category}
-                  </span>
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="bg-amber-100 text-amber-900 text-[10px] font-black uppercase px-3 py-1 rounded-full">
+                      {singleProduct.category}
+                    </span>
+
+                    <button
+                      onClick={(e) => handleShareClick(e, singleProduct)}
+                      className="text-stone-600 hover:text-amber-600 text-xs font-bold flex items-center gap-1 bg-stone-100 px-2.5 py-1 rounded-full border border-stone-200 transition"
+                    >
+                      <Share2 className="w-3.5 h-3.5 text-amber-600" /> Share Link
+                    </button>
+                  </div>
+
                   <h2 className="text-xl md:text-2xl font-serif font-black text-stone-900 mt-2">{singleProduct.name}</h2>
                   <p className="text-2xl font-black text-amber-600 mt-1">
                     {formatCurrencyPrice(singleProduct.price)}
@@ -835,7 +902,7 @@ export default function App() {
                     disabled={singleProduct.stock === 0}
                     onClick={() => {
                       addToCart(singleProduct, selectedSize);
-                      setSingleProduct(null);
+                      closeSingleProduct();
                     }}
                     className={`w-full font-extrabold py-3.5 rounded-xl shadow-xl flex items-center justify-center gap-2 text-xs uppercase tracking-wider transition ${
                       singleProduct.stock === 0
@@ -870,7 +937,7 @@ export default function App() {
         </div>
       )}
 
-      {/* Share Modal */}
+      {/* Share Modal with Direct Product Link Generator */}
       {shareItem && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl max-w-sm w-full p-6 text-center space-y-4 shadow-2xl relative">
@@ -883,8 +950,8 @@ export default function App() {
             </div>
 
             <div>
-              <h3 className="text-lg font-serif font-black text-stone-900">Share This Outfit</h3>
-              <p className="text-xs text-stone-500">Preview of what your friends will see:</p>
+              <h3 className="text-lg font-serif font-black text-stone-900">Share Direct Outfit Link</h3>
+              <p className="text-xs text-stone-500">Anyone opening this link will view this exact dress:</p>
             </div>
 
             <div className="bg-stone-50 p-3 rounded-2xl border border-stone-200 flex items-center gap-3 text-left shadow-inner">
@@ -908,7 +975,10 @@ export default function App() {
 
             <div className="grid grid-cols-1 gap-2.5 pt-1">
               <a
-                href={`https://wa.me/?text=${encodeURIComponent(`Check out this gorgeous dress "${shareItem.name}" on ${siteConfig.storeName}: ` + window.location.href)}`}
+                href={`https://wa.me/?text=${encodeURIComponent(
+                  `Check out this gorgeous dress "${shareItem.name}" on ${siteConfig.storeName}: ` +
+                  (shareItem.id ? `${window.location.origin}${window.location.pathname}?product=${shareItem.id}` : window.location.href)
+                )}`}
                 target="_blank"
                 rel="noreferrer"
                 className="w-full bg-[#25D366] hover:bg-[#20ba5a] text-white font-bold py-3 rounded-xl flex items-center justify-center gap-2.5 text-xs shadow transition"
@@ -917,7 +987,10 @@ export default function App() {
               </a>
 
               <a
-                href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(`Obsessed with "${shareItem.name}" on ${siteConfig.storeName}! ` + window.location.href)}`}
+                href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(
+                  `Obsessed with "${shareItem.name}" on ${siteConfig.storeName}! ` +
+                  (shareItem.id ? `${window.location.origin}${window.location.pathname}?product=${shareItem.id}` : window.location.href)
+                )}`}
                 target="_blank"
                 rel="noreferrer"
                 className="w-full bg-[#1DA1F2] hover:bg-[#1a91da] text-white font-bold py-3 rounded-xl flex items-center justify-center gap-2.5 text-xs shadow transition"
@@ -929,7 +1002,7 @@ export default function App() {
                 onClick={copyToClipboard}
                 className="w-full bg-stone-900 hover:bg-black text-white font-bold py-3 rounded-xl flex items-center justify-center gap-2.5 text-xs shadow transition"
               >
-                <Copy className="w-4 h-4 text-amber-400" /> Copy Direct Website Link
+                <Copy className="w-4 h-4 text-amber-400" /> Copy Direct Dress Link
               </button>
             </div>
           </div>
@@ -1037,7 +1110,7 @@ export default function App() {
                 </div>
                 <button
                   onClick={() => {
-                    setIsCheckoutOpen(false);
+                    setIsCartOpen(false);
                     setIsCheckoutOpen(true);
                   }}
                   className="w-full bg-stone-900 hover:bg-black text-white font-extrabold py-3.5 rounded-xl text-sm uppercase tracking-wider shadow-lg transition"
