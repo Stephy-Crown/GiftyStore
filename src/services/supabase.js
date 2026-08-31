@@ -9,23 +9,30 @@ export const supabase =
     ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
     : null;
 
-// Supabase Email & Password Authentication for Admin Dashboard
+// Supabase Email & Password Authentication for Admin Dashboard (With Persistent LocalStorage Fallback)
 export async function signInAdmin(email, password) {
+  const targetEmail = email || 'owner@giftystore.com';
+  
   if (!supabase) {
     // Development local bypass fallback
     if (password === '1234' || password === 'gifty2026') {
-      return { user: { email: email || 'admin@giftystore.com' }, session: { access_token: 'local_dev_token' }, error: null };
+      const devSession = { user: { email: targetEmail }, session: { access_token: 'local_dev_token' }, error: null };
+      localStorage.setItem('gifty_admin_session', JSON.stringify(devSession));
+      return devSession;
     }
     return { user: null, session: null, error: { message: 'Invalid Admin Credentials (Default: gifty2026)' } };
   }
 
   try {
     const { data, error } = await supabase.auth.signInWithPassword({
-      email,
+      email: targetEmail,
       password,
     });
     if (error) return { user: null, session: null, error };
-    return { user: data.user, session: data.session, error: null };
+    
+    const sessObj = { user: data.user, session: data.session, error: null };
+    localStorage.setItem('gifty_admin_session', JSON.stringify(sessObj));
+    return sessObj;
   } catch (err) {
     return { user: null, session: null, error: err };
   }
@@ -33,39 +40,65 @@ export async function signInAdmin(email, password) {
 
 export async function updateAdminEmail(newEmail) {
   if (!supabase) {
-    return { success: true, message: 'Local development admin email updated!' };
+    const existing = localStorage.getItem('gifty_admin_session');
+    if (existing) {
+      const parsed = JSON.parse(existing);
+      parsed.user = { ...parsed.user, email: newEmail };
+      localStorage.setItem('gifty_admin_session', JSON.stringify(parsed));
+    }
+    return { user: { email: newEmail }, success: true, message: 'Local development admin email updated!' };
   }
   try {
     const { data, error } = await supabase.auth.updateUser({ email: newEmail });
-    if (error) return { success: false, message: error.message };
-    return { success: true, message: 'Admin email update request sent! Please check your new inbox to confirm.' };
+    if (error) return { user: null, success: false, message: error.message };
+    return { user: data.user, success: true, message: 'Admin email update request sent! Please check your new inbox to confirm.' };
   } catch (err) {
-    return { success: false, message: err.message };
+    return { user: null, success: false, message: err.message };
   }
 }
 
 export async function updateAdminPassword(newPassword) {
   if (!supabase) {
-    return { success: true, message: 'Local development password updated!' };
+    return { user: { email: 'owner@giftystore.com' }, success: true, message: 'Local development password updated!' };
   }
   try {
     const { data, error } = await supabase.auth.updateUser({ password: newPassword });
-    if (error) return { success: false, message: error.message };
-    return { success: true, message: 'Admin password updated securely in Supabase!' };
+    if (error) return { user: null, success: false, message: error.message };
+    return { user: data.user, success: true, message: 'Admin password updated securely in Supabase!' };
   } catch (err) {
-    return { success: false, message: err.message };
+    return { user: null, success: false, message: err.message };
   }
 }
 
 export async function signOutAdmin() {
+  localStorage.removeItem('gifty_admin_session');
   if (!supabase) return;
   await supabase.auth.signOut();
 }
 
 export async function getCurrentAdminSession() {
-  if (!supabase) return null;
-  const { data } = await supabase.auth.getSession();
-  return data?.session || null;
+  // Check Supabase session first
+  if (supabase) {
+    const { data } = await supabase.auth.getSession();
+    if (data?.session) {
+      return data.session;
+    }
+  }
+
+  // Fallback to localStorage session
+  const stored = localStorage.getItem('gifty_admin_session');
+  if (stored) {
+    try {
+      const parsed = JSON.parse(stored);
+      if (parsed && (parsed.session || parsed.user)) {
+        return parsed;
+      }
+    } catch (e) {
+      localStorage.removeItem('gifty_admin_session');
+    }
+  }
+
+  return null;
 }
 
 // Fetch all fashion clothes from Supabase (or fallback to products.json)
