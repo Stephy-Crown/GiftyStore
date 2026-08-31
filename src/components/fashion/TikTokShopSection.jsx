@@ -1,5 +1,5 @@
 import React from 'react';
-import { ShoppingBag, Sparkles, Flame, Tag, Eye } from 'lucide-react';
+import { ShoppingBag, Sparkles, Flame, Tag, Eye, Play } from 'lucide-react';
 import { formatCurrencyPrice } from '../../App';
 
 // Official TikTok SVG Vector Icon
@@ -17,27 +17,29 @@ export function TikTokShopSection({ products = [], onAddToCart, onOpenSingleProd
   const displayReels = reels.length > 0 ? reels : safeProducts;
 
   return (
-    <section className="py-6 space-y-6">
-      {/* Exclusive TikTok Header */}
-      <div className="text-center space-y-2.5 px-4">
-        <div className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-rose-500 text-white font-black text-xs tracking-wider uppercase shadow-md">
-          <Flame className="w-3.5 h-3.5 fill-amber-300 text-amber-300" />
-          <span>VIRAL TIKTOK FITS & FOLLOWER DEALS</span>
+    <section className="py-8 space-y-8">
+      {/* Elegantly Structured High-Fashion TikTok Media Header */}
+      <div className="text-center space-y-3 px-4 max-w-2xl mx-auto">
+        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-gradient-to-r from-rose-600 via-rose-500 to-amber-500 text-white font-black text-[11px] tracking-widest uppercase shadow-lg border border-rose-400/40">
+          <Flame className="w-4 h-4 fill-amber-300 text-amber-300" />
+          <span>VIRAL TIKTOK FITS & EXCLUSIVE DEALS</span>
         </div>
-        <h2 className="text-2xl md:text-4xl font-serif font-black text-stone-900">
-          As Seen On @GiftyStore TikTok
+
+        <h2 className="text-3xl sm:text-4xl md:text-5xl font-serif font-black text-stone-900 tracking-tight leading-tight">
+          As Seen On <span className="text-rose-600 underline decoration-amber-400 decoration-wavy underline-offset-4">@GiftyStore</span> TikTok
         </h2>
-        <p className="text-xs md:text-sm text-stone-600 max-w-md mx-auto leading-relaxed">
-          Watch viral video reels in motion & order your dress with 1-click Paystack checkout or WhatsApp negotiation!
+
+        <p className="text-xs sm:text-sm text-stone-600 font-medium leading-relaxed">
+          Watch viral video reels in motion & order your dress with 1-click Paystack checkout or instant WhatsApp price negotiation!
         </p>
 
-        {/* TikTok Follow & Discount Pill */}
-        <div className="pt-1.5 flex flex-wrap items-center justify-center gap-2">
+        {/* TikTok Follow & Community Button */}
+        <div className="pt-2 flex flex-wrap items-center justify-center gap-2">
           <a
             href="https://tiktok.com"
             target="_blank"
             rel="noreferrer"
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-stone-900 text-white text-xs font-bold hover:bg-black transition shadow-lg hover:scale-105 active:scale-95"
+            className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-stone-950 text-white text-xs font-black hover:bg-black transition shadow-xl hover:scale-105 active:scale-95 border border-stone-800"
           >
             <TikTokIcon className="w-4 h-4 text-rose-400" />
             <span>Follow @GiftyStore on TikTok (150K+ Community)</span>
@@ -88,7 +90,7 @@ export function TikTokShopSection({ products = [], onAddToCart, onOpenSingleProd
                 {formatCurrencyPrice(reel.price)}
               </span>
 
-              {/* Dual Actions: Buy/View on Website AND Watch on TikTok App */}
+              {/* Dual Actions: Buy Outfit on Website AND Watch TikTok Reel */}
               <div className="grid grid-cols-2 gap-2 mt-3">
                 <button
                   onClick={(e) => {
@@ -108,11 +110,11 @@ export function TikTokShopSection({ products = [], onAddToCart, onOpenSingleProd
                   target="_blank"
                   rel="noreferrer"
                   onClick={(e) => e.stopPropagation()}
-                  className="w-full bg-stone-900/90 hover:bg-black text-rose-300 font-bold py-3 rounded-xl flex items-center justify-center gap-1.5 border border-rose-500/30 text-xs transition"
-                  title="Open Original Video on TikTok App"
+                  className="w-full bg-stone-900/90 hover:bg-black text-rose-300 font-bold py-3 rounded-xl flex items-center justify-center gap-1.5 border border-rose-500/40 text-xs transition"
+                  title="Watch original reel on TikTok profile"
                 >
                   <TikTokIcon className="w-4 h-4 text-rose-400" />
-                  <span>TikTok App</span>
+                  <span>Watch TikTok Reel</span>
                 </a>
               </div>
             </div>

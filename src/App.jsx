@@ -79,36 +79,36 @@ export default function App() {
   const heroSlides = [
     {
       id: 1,
-      tag: "OWAMBE COUTURE",
-      title: "Owambe Couture & Royal Glamour",
+      tag: "OWAMBE ROYALTY",
+      title: "Owambe Corset Gowns & Aso-Ebi Glamour",
       type: "video",
       videoUrl: "https://assets.mixkit.co/videos/preview/mixkit-fashion-model-walking-on-a-catwalk-41584-large.mp4",
-      posterUrl: "https://images.unsplash.com/photo-1571513722275-4b41940f54b8?w=1920&auto=format&fit=crop&q=85",
+      posterUrl: "https://images.unsplash.com/photo-1567401893414-76b7b1e5a7a5?w=1920&auto=format&fit=crop&q=85",
       cta: "Explore Collection"
     },
     {
       id: 2,
-      tag: "ROYAL VELVET",
-      title: "Hand-Crafted Velvet & Ankara Lace",
+      tag: "ANKARA & ADIRE LUXE",
+      title: "Hand-Crafted Ankara Lace & Silk Sets",
       type: "image",
-      imageUrl: "https://images.unsplash.com/photo-1571513722275-4b41940f54b8?w=1920&auto=format&fit=crop&q=85",
-      cta: "Shop Owambe Fits"
+      imageUrl: "https://images.unsplash.com/photo-1567401893414-76b7b1e5a7a5?w=1920&auto=format&fit=crop&q=85",
+      cta: "Shop Ankara Fits"
     },
     {
       id: 3,
-      tag: "VIRAL TIKTOK",
-      title: "Abeokuta Adire Silk Sets",
+      tag: "ROYAL VELVET COUTURE",
+      title: "Lagos VIP Wedding & Evening Velvet Sets",
       type: "image",
-      imageUrl: "https://images.unsplash.com/photo-1589156280159-27698a70f29e?w=1920&auto=format&fit=crop&q=85",
-      cta: "Watch TikTok Reels"
+      imageUrl: "https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?w=1920&auto=format&fit=crop&q=85",
+      cta: "Shop Velvet Couture"
     },
     {
       id: 4,
-      tag: "ASO-EBI ELEGANCE",
-      title: "Lagos VIP Wedding Couture",
+      tag: "VIRAL TIKTOK FASHION",
+      title: "Trending Owambe & Two-Piece Fits",
       type: "image",
-      imageUrl: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=1920&auto=format&fit=crop&q=85",
-      cta: "Explore Couture Fits"
+      imageUrl: "https://images.unsplash.com/photo-1583391733956-6c78276477e2?w=1920&auto=format&fit=crop&q=85",
+      cta: "Watch TikTok Reels"
     }
   ];
 
@@ -418,7 +418,7 @@ export default function App() {
               }`}
               title="Viral TikTok Deals"
             >
-              <TikTokIcon className="w-3.5 h-3.5 text-rose-600 fill-rose-600" />
+              <TikTokIcon className={`w-3.5 h-3.5 ${view === 'reels' ? 'text-white fill-white' : 'text-rose-600 fill-rose-600'}`} />
               <span>TikTok</span>
             </button>
             
