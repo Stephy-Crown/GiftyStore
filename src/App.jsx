@@ -109,7 +109,7 @@ export default function App() {
       tag: "VIRAL TIKTOK FASHION",
       title: "Trending Owambe & Two-Piece Fits",
       type: "image",
-      imageUrl: "https://images.unsplash.com/photo-1583391733956-6c78276477e2?w=1920&auto=format&fit=crop&q=85",
+      imageUrl: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=1920&auto=format&fit=crop&q=85",
       cta: "Watch TikTok Reels"
     }
   ];
@@ -129,16 +129,6 @@ export default function App() {
   const navigateToView = (newView) => {
     setView(newView);
     updateUrl(newView, singleProduct?.id || null);
-  };
-
-  const scrollToSearch = () => {
-    if (view !== 'store') setView('store');
-    setTimeout(() => {
-      if (searchInputRef.current) {
-        searchInputRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        searchInputRef.current.focus();
-      }
-    }, 100);
   };
 
   const openSingleProduct = (product, shouldUpdateUrl = true) => {
@@ -405,17 +395,42 @@ export default function App() {
         </div>
       )}
 
-      {/* Uncongested Ultra-Clean Header Navbar with Full URL Navigation */}
+      {/* Ultra-Clean Header Navbar: Logo Left, Centered Desktop Search Bar, Nav Right */}
       <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-stone-200/80 shadow-sm">
         <div className="max-w-7xl mx-auto px-3.5 sm:px-6 md:px-8 py-2.5 sm:py-3 flex items-center justify-between">
           
-          {/* Logo Mark */}
-          <div onClick={handleLogoClick} className="cursor-pointer group" title="Triple tap for owner admin">
+          {/* Logo Mark (Left) */}
+          <div onClick={handleLogoClick} className="cursor-pointer group shrink-0" title="Triple tap for owner admin">
             <BrandLogoCrest />
           </div>
 
-          {/* Uncongested Header Navigation with URL Sync & Compact 1-Tap Search Button */}
-          <div className="flex items-center gap-1.5 sm:gap-2">
+          {/* Centered Desktop Search Input Bar (Hidden on Mobile for 0 Congestion) */}
+          <div className="hidden md:flex flex-1 max-w-sm mx-6 relative">
+            <input
+              type="text"
+              placeholder="Search outfits by name, style, fabric..."
+              value={searchQuery}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                if (view !== 'store') setView('store');
+                setVisibleCount(8);
+              }}
+              className="w-full pl-9 pr-8 py-2 bg-stone-100 border border-stone-200/90 rounded-full text-xs font-bold text-stone-900 outline-none focus:border-stone-900 shadow-inner transition placeholder:text-stone-400"
+            />
+            <Search className="w-4 h-4 text-amber-600 absolute left-3 top-2.5 pointer-events-none" />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                className="absolute right-2.5 top-2 text-stone-400 hover:text-stone-900 text-xs font-bold bg-stone-200 w-5 h-5 rounded-full flex items-center justify-center"
+                title="Clear search query"
+              >
+                ✕
+              </button>
+            )}
+          </div>
+
+          {/* Navigation Buttons (Right) */}
+          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
             <button
               onClick={() => navigateToView('store')}
               className={`px-3 py-1.5 sm:px-4 sm:py-2 rounded-full text-xs font-black transition flex items-center gap-1.5 ${
@@ -441,19 +456,10 @@ export default function App() {
               <TikTokIcon className={`w-3.5 h-3.5 ${view === 'reels' ? 'text-white fill-white' : 'text-rose-600 fill-rose-600'}`} />
               <span>TikTok</span>
             </button>
-
-            {/* Compact 1-Tap Search Button (Uncongested Icon Button on Mobile) */}
-            <button
-              onClick={scrollToSearch}
-              className="p-2 sm:p-2.5 bg-stone-100 hover:bg-stone-200 text-stone-800 rounded-full transition shadow-sm"
-              title="Search Outfits"
-            >
-              <Search className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-stone-800" />
-            </button>
             
             <button
               onClick={() => setIsCartOpen(!isCartOpen)}
-              className="relative p-2 sm:p-2.5 bg-stone-950 hover:bg-black text-amber-400 rounded-full shadow-md transition"
+              className="relative p-2 sm:p-2.5 bg-stone-950 hover:bg-black text-amber-400 rounded-full shadow-md transition ml-1"
               title="Shopping Cart"
             >
               <ShoppingCart className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-400" />
