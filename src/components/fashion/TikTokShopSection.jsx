@@ -1,5 +1,5 @@
 import React from 'react';
-import { ShoppingBag, Sparkles, Flame, Tag } from 'lucide-react';
+import { ShoppingBag, Sparkles, Flame, Tag, Eye } from 'lucide-react';
 import { formatCurrencyPrice } from '../../App';
 
 // Official TikTok SVG Vector Icon
@@ -11,7 +11,7 @@ function TikTokIcon({ className = "w-5 h-5" }) {
   );
 }
 
-export function TikTokShopSection({ products = [], onAddToCart }) {
+export function TikTokShopSection({ products = [], onAddToCart, onOpenSingleProduct }) {
   const safeProducts = Array.isArray(products) ? products.filter(Boolean) : [];
   const reels = safeProducts.filter((p) => p.video_url || p.is_tiktok_featured);
   const displayReels = reels.length > 0 ? reels : safeProducts;
@@ -50,13 +50,14 @@ export function TikTokShopSection({ products = [], onAddToCart }) {
         {displayReels.map((reel) => (
           <div
             key={reel.id || reel.name}
-            className="relative rounded-3xl overflow-hidden h-[480px] sm:h-[500px] shadow-2xl bg-stone-900 border border-stone-200 group"
+            onClick={() => typeof onOpenSingleProduct === 'function' && onOpenSingleProduct(reel)}
+            className="relative rounded-3xl overflow-hidden h-[480px] sm:h-[500px] shadow-2xl bg-stone-900 border border-stone-200 group cursor-pointer"
           >
             {reel.video_url ? (
               <video
                 src={reel.video_url}
                 poster={reel.image}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
                 autoPlay
                 loop
                 muted
@@ -66,7 +67,7 @@ export function TikTokShopSection({ products = [], onAddToCart }) {
               <img
                 src={reel.image}
                 alt={reel.name}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
               />
             )}
 
@@ -90,7 +91,10 @@ export function TikTokShopSection({ products = [], onAddToCart }) {
               <div className="grid grid-cols-2 gap-2 mt-3">
                 <button
                   disabled={reel.stock === 0}
-                  onClick={() => onAddToCart(reel)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onAddToCart(reel);
+                  }}
                   className={`w-full font-black py-3 rounded-xl flex items-center justify-center gap-1.5 shadow-xl transition text-xs uppercase tracking-wider ${
                     reel.stock === 0 ? 'bg-stone-800 text-stone-500 cursor-not-allowed shadow-none' : 'bg-white hover:bg-amber-400 text-stone-950 active:scale-95'
                   }`}
@@ -99,15 +103,18 @@ export function TikTokShopSection({ products = [], onAddToCart }) {
                   <span>{reel.stock === 0 ? 'Sold Out' : 'Buy Outfit'}</span>
                 </button>
 
-                <a
-                  href="https://tiktok.com"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="w-full bg-stone-900/90 hover:bg-black text-rose-300 font-bold py-3 rounded-xl flex items-center justify-center gap-1.5 border border-rose-500/30 text-xs transition"
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (typeof onOpenSingleProduct === 'function') {
+                      onOpenSingleProduct(reel);
+                    }
+                  }}
+                  className="w-full bg-stone-900/90 hover:bg-black text-amber-400 font-bold py-3 rounded-xl flex items-center justify-center gap-1.5 border border-amber-400/30 text-xs transition"
                 >
-                  <TikTokIcon className="w-4 h-4 text-rose-400" />
-                  <span>Watch TikTok</span>
-                </a>
+                  <Eye className="w-4 h-4 text-amber-400" />
+                  <span>View Details</span>
+                </button>
               </div>
             </div>
           </div>

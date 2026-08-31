@@ -4,7 +4,7 @@ import { getFashionProducts } from './services/supabase';
 import { TikTokShopSection } from './components/fashion/TikTokShopSection';
 import { AdminDashboard } from './pages/AdminDashboard';
 import CheckoutModal from './components/CheckoutModal';
-import { Crown, Flame, Trash2, MapPin, ArrowRight, Heart, X, Share2, Copy, Send, Twitter, Store, ShoppingCart, SlidersHorizontal, Eye, ExternalLink, ChevronDown, AlertTriangle, Sparkles } from 'lucide-react';
+import { Crown, Flame, Trash2, MapPin, ArrowRight, Heart, X, Share2, Copy, Send, Twitter, Store, ShoppingCart, SlidersHorizontal, Eye, ExternalLink, ChevronDown, AlertTriangle, Sparkles, Plus, Minus } from 'lucide-react';
 
 // Official Standard WhatsApp SVG Icon
 function WhatsAppIcon({ className = "w-5 h-5" }) {
@@ -262,8 +262,20 @@ export default function App() {
     setIsCartOpen(true);
   };
 
-  const removeFromCart = (id) => {
-    setCart((prev) => prev.filter((item) => String(item.id) !== String(id)));
+  const updateCartQuantity = (id, size, delta) => {
+    setCart((prev) => {
+      return prev.map((item) => {
+        if (String(item.id) === String(id) && item.size === size) {
+          const newQty = Math.max(1, item.quantity + delta);
+          return { ...item, quantity: newQty };
+        }
+        return item;
+      });
+    });
+  };
+
+  const removeFromCart = (id, size) => {
+    setCart((prev) => prev.filter((item) => !(String(item.id) === String(id) && item.size === size)));
   };
 
   const toggleWishlist = (product) => {
@@ -418,7 +430,7 @@ export default function App() {
               <ShoppingCart className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-400" />
               {cart.length > 0 && (
                 <span className="absolute -top-1 -right-1 bg-emerald-500 text-white text-[10px] font-black rounded-full w-4 h-4 sm:w-4.5 sm:h-4.5 flex items-center justify-center shadow-lg ring-2 ring-white animate-bounce">
-                  {cart.length}
+                  {cart.reduce((sum, i) => sum + i.quantity, 0)}
                 </span>
               )}
             </button>
@@ -504,7 +516,7 @@ export default function App() {
           </div>
 
           {/* TikTok Shop Section */}
-          <TikTokShopSection products={safeProducts} onAddToCart={addToCart} />
+          <TikTokShopSection products={safeProducts} onAddToCart={addToCart} onOpenSingleProduct={openSingleProduct} />
 
           {/* Catalog Grid with Size, Price, AND Prominent Wishlist Filter */}
           <div className="space-y-6 pt-6 border-t border-stone-200">
@@ -742,7 +754,7 @@ export default function App() {
       {/* TikTok Reels View */}
       {view === 'reels' && (
         <main className="max-w-7xl mx-auto px-4 py-8 overflow-x-hidden">
-          <TikTokShopSection products={safeProducts} onAddToCart={addToCart} />
+          <TikTokShopSection products={safeProducts} onAddToCart={addToCart} onOpenSingleProduct={openSingleProduct} />
           <SharedFooter />
         </main>
       )}
@@ -750,7 +762,7 @@ export default function App() {
       {/* Secret Encrypted Admin View */}
       {view === 'admin' && (
         <main className="max-w-7xl mx-auto px-4 py-8 overflow-x-hidden">
-          <AdminDashboard products={safeProducts} setProducts={setProducts} />
+          <AdminDashboard products={safeProducts} setProducts={setProducts} showToast={showToast} />
         </main>
       )}
 
@@ -1057,13 +1069,15 @@ export default function App() {
         </div>
       )}
 
-      {/* Cart Drawer — With Dual Wishlist Access */}
+      {/* Cart Drawer — With Dual Wishlist Access & Quantity (+/-) Counter Controls */}
       {isCartOpen && (
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex justify-end">
           <div className="bg-white max-w-md w-full h-full p-6 border-l border-stone-200 flex flex-col justify-between shadow-2xl">
             <div>
               <div className="flex justify-between items-center pb-4 border-b border-stone-200">
-                <h2 className="text-xl font-serif font-black text-stone-900">Your Shopping Cart ({cart.length})</h2>
+                <h2 className="text-xl font-serif font-black text-stone-900">
+                  Your Shopping Cart ({cart.reduce((sum, i) => sum + i.quantity, 0)})
+                </h2>
                 <button onClick={() => setIsCartOpen(false)} className="text-stone-400 hover:text-stone-900 p-1">✕</button>
               </div>
 
@@ -1086,14 +1100,37 @@ export default function App() {
                   <p className="text-sm text-stone-400 py-12 text-center">Your cart is currently empty.</p>
                 ) : (
                   cart.map((item) => (
-                    <div key={item.id} className="flex justify-between items-center text-xs md:text-sm bg-stone-50 p-3.5 rounded-2xl border border-stone-200">
-                      <div>
-                        <p className="font-bold text-stone-900">{item.name} {item.size && `(Size: ${item.size})`}</p>
-                        <p className="text-stone-500 mt-0.5">Qty: {item.quantity} × {formatCurrencyPrice(item.price)}</p>
-                      </div>
+                    <div key={`${item.id}-${item.size}`} className="flex justify-between items-center text-xs md:text-sm bg-stone-50 p-3.5 rounded-2xl border border-stone-200 gap-3">
                       <div className="flex items-center gap-3">
-                        <span className="font-black text-amber-600">{formatCurrencyPrice(item.price * item.quantity)}</span>
-                        <button onClick={() => removeFromCart(item.id)} className="text-rose-500 hover:bg-rose-50 p-1.5 rounded-lg">
+                        <img src={item.image} alt={item.name} className="w-12 h-14 object-cover rounded-xl shadow-sm" />
+                        <div>
+                          <p className="font-bold text-stone-900">{item.name} {item.size && `(Size: ${item.size})`}</p>
+                          <p className="text-amber-600 font-black text-xs mt-0.5">{formatCurrencyPrice(item.price)}</p>
+                          
+                          {/* Quantity Counter (+/-) */}
+                          <div className="flex items-center gap-1.5 mt-1.5 bg-white px-2 py-1 rounded-xl border border-stone-200 shadow-sm w-fit">
+                            <button
+                              onClick={() => updateCartQuantity(item.id, item.size, -1)}
+                              className="w-5 h-5 flex items-center justify-center bg-stone-100 hover:bg-stone-200 text-stone-900 font-black rounded-md text-xs transition"
+                              title="Decrease Quantity"
+                            >
+                              -
+                            </button>
+                            <span className="font-black text-xs text-stone-900 px-1">{item.quantity}</span>
+                            <button
+                              onClick={() => updateCartQuantity(item.id, item.size, 1)}
+                              className="w-5 h-5 flex items-center justify-center bg-stone-100 hover:bg-stone-200 text-stone-900 font-black rounded-md text-xs transition"
+                              title="Increase Quantity"
+                            >
+                              +
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-3">
+                        <span className="font-black text-amber-600 text-sm">{formatCurrencyPrice(item.price * item.quantity)}</span>
+                        <button onClick={() => removeFromCart(item.id, item.size)} className="text-rose-500 hover:bg-rose-50 p-1.5 rounded-lg transition" title="Remove item">
                           <Trash2 className="w-4 h-4" />
                         </button>
                       </div>

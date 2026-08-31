@@ -3,7 +3,7 @@ import { Plus, Trash2, Edit3, ShieldCheck, Tag, Copy, Sparkles, RefreshCw, Key, 
 import siteConfig from '../data/config.json';
 import { updateProductInSupabase, deleteProductFromSupabase, addProductToSupabase, signInAdmin, signOutAdmin, getCurrentAdminSession, updateAdminPassword, updateAdminEmail } from '../services/supabase';
 
-export function AdminDashboard({ products, setProducts }) {
+export function AdminDashboard({ products, setProducts, showToast }) {
   const [activeTab, setActiveTab] = useState('products'); // 'products' | 'negotiate' | 'security'
   
   // Supabase Auth / Login Lock State
@@ -54,6 +54,12 @@ export function AdminDashboard({ products, setProducts }) {
   const [copiedLink, setCopiedLink] = useState(false);
   const [negotiateError, setNegotiateError] = useState('');
 
+  const triggerToast = (msg, action) => {
+    if (typeof showToast === 'function') {
+      showToast(msg, action);
+    }
+  };
+
   // Check persistent admin session on mount
   useEffect(() => {
     async function checkSession() {
@@ -82,6 +88,7 @@ export function AdminDashboard({ products, setProducts }) {
       setFailedAttempts(0);
       setAdminPassword('');
       setLoginError('');
+      triggerToast('Authenticated Store Owner Portal!');
     } else {
       const nextFail = failedAttempts + 1;
       setFailedAttempts(nextFail);
@@ -110,6 +117,7 @@ export function AdminDashboard({ products, setProducts }) {
     await signOutAdmin();
     setIsUnlocked(false);
     setCurrentAdminUser(null);
+    triggerToast('Signed out of Admin Dashboard');
   };
 
   const handleEmailChange = async (e) => {
@@ -128,6 +136,7 @@ export function AdminDashboard({ products, setProducts }) {
 
     if (res.success) {
       setEmailChangeSuccess(res.message);
+      triggerToast('Admin email update sent!');
       setNewEmailInput('');
       setTimeout(() => setEmailChangeSuccess(''), 4000);
     } else {
@@ -151,6 +160,7 @@ export function AdminDashboard({ products, setProducts }) {
 
     if (res.success) {
       setPasswordChangeSuccess(res.message);
+      triggerToast('Admin password updated successfully!');
       setNewPasswordInput('');
       setTimeout(() => setPasswordChangeSuccess(''), 4000);
     } else {
@@ -166,6 +176,7 @@ export function AdminDashboard({ products, setProducts }) {
       reader.onloadend = () => {
         setForm((prev) => ({ ...prev, image: reader.result }));
         setFormSuccess('Photo uploaded from device!');
+        triggerToast('Uploaded photo from device!');
         setTimeout(() => setFormSuccess(''), 3000);
       };
       reader.readAsDataURL(file);
@@ -180,6 +191,12 @@ export function AdminDashboard({ products, setProducts }) {
     setProducts((prev) =>
       prev.map((p) => (String(p.id) === String(product.id) ? { ...p, stock: updatedStock } : p))
     );
+
+    if (updatedStock === 0) {
+      triggerToast(`"${product.name}" is now marked as SOLD OUT (0 units)`);
+    } else {
+      triggerToast(`Updated stock for "${product.name}" to ${updatedStock} units!`);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -208,10 +225,12 @@ export function AdminDashboard({ products, setProducts }) {
       );
       setEditingId(null);
       setFormSuccess('Outfit and Stock count updated successfully!');
+      triggerToast(`Updated "${form.name}" details & stock!`);
     } else {
       const created = await addProductToSupabase(payload);
       setProducts((prev) => [created || { ...payload, id: Date.now() }, ...prev]);
       setFormSuccess('New dress outfit published to website!');
+      triggerToast(`Published "${form.name}" to boutique catalog!`);
     }
 
     setTimeout(() => setFormSuccess(''), 3500);
@@ -247,6 +266,7 @@ export function AdminDashboard({ products, setProducts }) {
     if (!deleteConfirmProduct) return;
     await deleteProductFromSupabase(deleteConfirmProduct.id);
     setProducts((prev) => prev.filter((p) => String(p.id) !== String(deleteConfirmProduct.id)));
+    triggerToast(`Deleted "${deleteConfirmProduct.name}" from inventory`);
     setDeleteConfirmProduct(null);
   };
 
@@ -260,11 +280,13 @@ export function AdminDashboard({ products, setProducts }) {
     setNegotiateError('');
     const link = `${window.location.origin}/?item=${encodeURIComponent(negotiatedProduct)}&discountedPrice=${discountedPrice}&checkout=true`;
     setGeneratedLink(link);
+    triggerToast('Generated discount payment link!');
   };
 
   const copyGeneratedLink = () => {
     navigator.clipboard.writeText(generatedLink);
     setCopiedLink(true);
+    triggerToast('Negotiated payment link copied to clipboard!');
     setTimeout(() => setCopiedLink(false), 3000);
   };
 
