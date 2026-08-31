@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Trash2, Edit3, ShieldCheck, Tag, Copy, Sparkles, RefreshCw, Key, Lock, Check, Upload, Image, AlertCircle, X, LogOut, Mail, Package, AlertTriangle } from 'lucide-react';
+import { Plus, Trash2, Edit3, ShieldCheck, Tag, Copy, Sparkles, RefreshCw, Key, Lock, Check, Upload, Image, AlertCircle, X, LogOut, Mail, Package, AlertTriangle, Search, ChevronLeft, ChevronRight, SlidersHorizontal } from 'lucide-react';
 import siteConfig from '../data/config.json';
 import { updateProductInSupabase, deleteProductFromSupabase, addProductToSupabase, signInAdmin, signOutAdmin, getCurrentAdminSession, updateAdminPassword, updateAdminEmail } from '../services/supabase';
 
@@ -30,6 +30,15 @@ export function AdminDashboard({ products, setProducts, showToast }) {
   // Form Banner Message
   const [formError, setFormError] = useState('');
   const [formSuccess, setFormSuccess] = useState('');
+
+  // Mobile Collapsible Upload Form Toggle
+  const [showMobileForm, setShowMobileForm] = useState(false);
+
+  // Admin Search & Pagination State (5 products per page for maximum mobile space)
+  const [adminSearch, setAdminSearch] = useState('');
+  const [adminCategory, setAdminCategory] = useState('All');
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
 
   // Delete Confirmation Modal State
   const [deleteConfirmProduct, setDeleteConfirmProduct] = useState(null);
@@ -101,14 +110,13 @@ export function AdminDashboard({ products, setProducts, showToast }) {
             if (prev <= 1) {
               clearInterval(timer);
               setFailedAttempts(0);
-              setLoginError('');
               return 0;
             }
             return prev - 1;
           });
         }, 1000);
       } else {
-        setLoginError(res.error?.message || `Invalid Admin Credentials. ${3 - nextFail} attempts remaining.`);
+        setLoginError(res.error?.message || `Invalid password. ${3 - nextFail} attempt(s) remaining.`);
       }
     }
   };
@@ -117,235 +125,246 @@ export function AdminDashboard({ products, setProducts, showToast }) {
     await signOutAdmin();
     setIsUnlocked(false);
     setCurrentAdminUser(null);
-    triggerToast('Signed out of Admin Dashboard');
+    triggerToast('Admin Session Signed Out');
   };
 
-  const handleEmailChange = async (e) => {
+  const handleUpdateEmail = async (e) => {
     e.preventDefault();
+    setEmailChangeSuccess('');
+    setEmailChangeError('');
     if (!newEmailInput || !newEmailInput.includes('@')) {
-      setEmailChangeError('Please enter a valid email address.');
+      setEmailChangeError('Please enter a valid new email address.');
       return;
     }
 
     setIsUpdatingEmail(true);
-    setEmailChangeError('');
-    setEmailChangeSuccess('');
-
     const res = await updateAdminEmail(newEmailInput);
     setIsUpdatingEmail(false);
 
-    if (res.success) {
-      setEmailChangeSuccess(res.message);
-      triggerToast('Admin email update sent!');
+    if (res.user) {
+      setEmailChangeSuccess(`Confirmation email sent to ${newEmailInput}. Please check inbox!`);
       setNewEmailInput('');
-      setTimeout(() => setEmailChangeSuccess(''), 4000);
+      triggerToast('Email Change Confirmation Sent!');
     } else {
-      setEmailChangeError(res.message);
+      setEmailChangeError(res.error?.message || 'Failed to update email address.');
     }
   };
 
-  const handlePasswordChange = async (e) => {
+  const handleUpdatePassword = async (e) => {
     e.preventDefault();
-    if (newPasswordInput.length < 6) {
-      setPasswordChangeError('Please enter a secure password of at least 6 characters.');
+    setPasswordChangeSuccess('');
+    setPasswordChangeError('');
+    if (!newPasswordInput || newPasswordInput.length < 6) {
+      setPasswordChangeError('Password must be at least 6 characters long.');
       return;
     }
 
     setIsUpdatingPassword(true);
-    setPasswordChangeError('');
-    setPasswordChangeSuccess('');
-
     const res = await updateAdminPassword(newPasswordInput);
     setIsUpdatingPassword(false);
 
-    if (res.success) {
-      setPasswordChangeSuccess(res.message);
-      triggerToast('Admin password updated successfully!');
+    if (res.user) {
+      setPasswordChangeSuccess('Admin password updated successfully!');
       setNewPasswordInput('');
-      setTimeout(() => setPasswordChangeSuccess(''), 4000);
+      triggerToast('Admin Password Updated Successfully!');
     } else {
-      setPasswordChangeError(res.message);
+      setPasswordChangeError(res.error?.message || 'Failed to update password.');
     }
   };
 
-  // Direct Device Photo File Upload Handler
   const handleImageFileUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
         setForm((prev) => ({ ...prev, image: reader.result }));
-        setFormSuccess('Photo uploaded from device!');
-        triggerToast('Uploaded photo from device!');
-        setTimeout(() => setFormSuccess(''), 3000);
+        triggerToast('Photo loaded from device!');
       };
       reader.readAsDataURL(file);
     }
   };
 
-  // Quick Restock Handler for Inventory Items
-  const handleQuickStockUpdate = async (product, newStock) => {
-    const updatedStock = Math.max(0, newStock);
-    const payload = { stock: updatedStock };
-    await updateProductInSupabase(product.id, payload);
-    setProducts((prev) =>
-      prev.map((p) => (String(p.id) === String(product.id) ? { ...p, stock: updatedStock } : p))
-    );
+  const handleEditClick = (item) => {
+    setEditingId(item.id);
+    setForm({
+      name: item.name,
+      price: item.price,
+      category: item.category || 'Corset Gowns',
+      image: item.image,
+      video_url: item.video_url || '',
+      sizes: item.sizes || ['S', 'M', 'L', 'XL'],
+      is_tiktok_featured: item.is_tiktok_featured !== undefined ? item.is_tiktok_featured : true,
+      stock: item.stock !== undefined ? item.stock : 5,
+    });
+    setShowMobileForm(true);
+    window.scrollTo({ top: 100, behavior: 'smooth' });
+  };
 
-    if (updatedStock === 0) {
-      triggerToast(`"${product.name}" is now marked as SOLD OUT (0 units)`);
-    } else {
-      triggerToast(`Updated stock for "${product.name}" to ${updatedStock} units!`);
-    }
+  const handleQuickStockUpdate = async (product, newStockCount) => {
+    const updated = { ...product, stock: Math.max(0, newStockCount) };
+    setProducts((prev) => prev.map((p) => (String(p.id) === String(product.id) ? updated : p)));
+    await updateProductInSupabase(product.id, { stock: Math.max(0, newStockCount) });
+    triggerToast(`Updated "${product.name}" stock to ${newStockCount} units!`);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!form.name || !form.price || !form.image) {
-      setFormError('Please fill in Outfit Name, Price, and Image URL or upload a photo.');
+    setFormError('');
+    setFormSuccess('');
+
+    if (!form.name.trim() || !form.price || !form.image.trim()) {
+      setFormError('Please fill in Outfit Name, Price, and Photo URL/Upload!');
       return;
     }
 
-    setFormError('');
     const payload = {
-      name: form.name,
+      name: form.name.trim(),
       price: Number(form.price),
       category: form.category,
-      image: form.image,
-      video_url: form.video_url,
+      image: form.image.trim(),
+      video_url: form.video_url.trim() || null,
       sizes: form.sizes,
       is_tiktok_featured: form.is_tiktok_featured,
-      stock: Number(form.stock !== undefined ? form.stock : 5),
+      stock: Number(form.stock || 0),
     };
 
     if (editingId) {
-      await updateProductInSupabase(editingId, payload);
-      setProducts((prev) =>
-        prev.map((p) => (String(p.id) === String(editingId) ? { ...p, ...payload } : p))
-      );
-      setEditingId(null);
-      setFormSuccess('Outfit and Stock count updated successfully!');
-      triggerToast(`Updated "${form.name}" details & stock!`);
+      setProducts((prev) => prev.map((p) => (String(p.id) === String(editingId) ? { ...p, ...payload } : p)));
+      const res = await updateProductInSupabase(editingId, payload);
+      if (res) {
+        setFormSuccess(`Updated "${payload.name}" successfully!`);
+        triggerToast(`Saved changes for ${payload.name}`);
+        setEditingId(null);
+        setForm({ name: '', price: '', category: 'Corset Gowns', image: '', video_url: '', sizes: ['S', 'M', 'L', 'XL'], is_tiktok_featured: true, stock: 5 });
+        setShowMobileForm(false);
+      }
     } else {
-      const created = await addProductToSupabase(payload);
-      setProducts((prev) => [created || { ...payload, id: Date.now() }, ...prev]);
-      setFormSuccess('New dress outfit published to website!');
-      triggerToast(`Published "${form.name}" to boutique catalog!`);
+      const tempId = `local-${Date.now()}`;
+      const newObj = { id: tempId, ...payload };
+      setProducts((prev) => [newObj, ...prev]);
+
+      const res = await addProductToSupabase(payload);
+      if (res && res[0]) {
+        setProducts((prev) => prev.map((p) => (p.id === tempId ? res[0] : p)));
+      }
+
+      setFormSuccess(`Published "${payload.name}" to Storefront!`);
+      triggerToast(`Published ${payload.name} to live catalog`);
+      setForm({ name: '', price: '', category: 'Corset Gowns', image: '', video_url: '', sizes: ['S', 'M', 'L', 'XL'], is_tiktok_featured: true, stock: 5 });
+      setShowMobileForm(false);
     }
-
-    setTimeout(() => setFormSuccess(''), 3500);
-
-    setForm({
-      name: '',
-      price: '',
-      category: 'Corset Gowns',
-      image: '',
-      video_url: '',
-      sizes: ['S', 'M', 'L', 'XL'],
-      is_tiktok_featured: true,
-      stock: 5,
-    });
-  };
-
-  const startEdit = (product) => {
-    setEditingId(product.id);
-    setFormError('');
-    setForm({
-      name: product.name,
-      price: product.price,
-      category: product.category || 'Corset Gowns',
-      image: product.image,
-      video_url: product.video_url || '',
-      sizes: product.sizes || ['S', 'M', 'L', 'XL'],
-      is_tiktok_featured: product.is_tiktok_featured ?? true,
-      stock: product.stock !== undefined ? product.stock : 5,
-    });
   };
 
   const confirmDelete = async () => {
     if (!deleteConfirmProduct) return;
-    await deleteProductFromSupabase(deleteConfirmProduct.id);
-    setProducts((prev) => prev.filter((p) => String(p.id) !== String(deleteConfirmProduct.id)));
-    triggerToast(`Deleted "${deleteConfirmProduct.name}" from inventory`);
+    const targetId = deleteConfirmProduct.id;
+    setProducts((prev) => prev.filter((p) => String(p.id) !== String(targetId)));
+    await deleteProductFromSupabase(targetId);
+    triggerToast(`Deleted "${deleteConfirmProduct.name}" from catalog`);
     setDeleteConfirmProduct(null);
   };
 
-  const handleGenerateNegotiatedLink = (e) => {
+  const handleGenerateLink = (e) => {
     e.preventDefault();
-    if (!negotiatedProduct || !discountedPrice) {
-      setNegotiateError('Please select an outfit and enter the agreed negotiated price.');
+    setNegotiateError('');
+    setGeneratedLink('');
+    setCopiedLink(false);
+
+    if (!negotiatedProduct) {
+      setNegotiateError('Please select an outfit to negotiate.');
+      return;
+    }
+    if (!discountedPrice || Number(discountedPrice) <= 0) {
+      setNegotiateError('Please enter a valid discounted price in NGN.');
       return;
     }
 
-    setNegotiateError('');
-    const link = `${window.location.origin}/?item=${encodeURIComponent(negotiatedProduct)}&discountedPrice=${discountedPrice}&checkout=true`;
-    setGeneratedLink(link);
-    triggerToast('Generated discount payment link!');
+    const prod = products.find((p) => String(p.id) === String(negotiatedProduct));
+    const prodId = prod?.id || '1';
+
+    const baseUrl = window.location.origin + window.location.pathname;
+    const generated = `${baseUrl}?product=${prodId}&discountedPrice=${discountedPrice}&checkout=true`;
+
+    setGeneratedLink(generated);
+    triggerToast('Custom Discounted Payment Link Created!');
   };
 
   const copyGeneratedLink = () => {
-    navigator.clipboard.writeText(generatedLink);
-    setCopiedLink(true);
-    triggerToast('Negotiated payment link copied to clipboard!');
-    setTimeout(() => setCopiedLink(false), 3000);
+    if (generatedLink) {
+      navigator.clipboard.writeText(generatedLink);
+      setCopiedLink(true);
+      triggerToast('Copied Discounted Link to Clipboard!');
+      setTimeout(() => setCopiedLink(false), 3000);
+    }
   };
 
+  // Filtered & Paginated Products Logic
+  const filteredAdminProducts = products.filter((p) => {
+    if (!p) return false;
+    const matchesSearch = !adminSearch.trim() ||
+      (p.name && p.name.toLowerCase().includes(adminSearch.toLowerCase())) ||
+      (p.category && p.category.toLowerCase().includes(adminSearch.toLowerCase()));
+    
+    const matchesCat = adminCategory === 'All' || p.category === adminCategory;
+    return matchesSearch && matchesCat;
+  });
+
+  const totalPages = Math.ceil(filteredAdminProducts.length / itemsPerPage) || 1;
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const paginatedProducts = filteredAdminProducts.slice(startIndex, startIndex + itemsPerPage);
+
+  // If Lockout/Login Screen
   if (!isUnlocked) {
     return (
-      <div className="max-w-md mx-auto my-12 bg-white rounded-3xl p-8 border border-stone-200 shadow-2xl space-y-6 text-center">
-        <div className="w-16 h-16 bg-stone-900 text-amber-400 rounded-full flex items-center justify-center mx-auto shadow-lg">
-          <Lock className="w-8 h-8" />
-        </div>
-
-        <div>
-          <h2 className="text-2xl font-serif font-black text-stone-900">Store Owner Admin Portal</h2>
-          <p className="text-xs text-stone-500 mt-1">Authenticate with your Supabase Admin Credentials</p>
+      <div className="max-w-md mx-auto my-6 sm:my-12 bg-white rounded-3xl p-5 sm:p-8 border border-stone-200 shadow-2xl space-y-6 overflow-x-hidden">
+        <div className="text-center space-y-2">
+          <div className="w-12 h-12 sm:w-14 sm:h-14 bg-stone-900 text-amber-400 rounded-2xl flex items-center justify-center mx-auto shadow-lg">
+            <Lock className="w-6 h-6 sm:w-7 sm:h-7" />
+          </div>
+          <h2 className="text-xl sm:text-2xl font-serif font-black text-stone-900">GIFTY Owner Admin Portal</h2>
+          <p className="text-xs text-stone-500">Enter your Supabase Store Owner account credentials to log in.</p>
         </div>
 
         {loginError && (
-          <div className="bg-rose-50 text-rose-700 p-3 rounded-2xl text-xs font-bold border border-rose-200 flex items-center gap-2 text-left">
+          <div className="bg-rose-50 text-rose-700 p-3.5 rounded-2xl text-xs font-bold border border-rose-200 flex items-center gap-2">
             <AlertCircle className="w-4 h-4 shrink-0 text-rose-600" />
             <span>{loginError}</span>
           </div>
         )}
 
-        <form onSubmit={handleUnlock} className="space-y-4 text-left">
+        <form onSubmit={handleUnlock} className="space-y-4">
           <div className="space-y-1">
-            <label className="text-xs font-bold text-stone-700">Admin Email</label>
-            <div className="relative">
-              <input
-                type="email"
-                placeholder="admin@giftystore.com"
-                value={adminEmail}
-                onChange={(e) => setAdminEmail(e.target.value)}
-                className="w-full pl-9 pr-4 py-3 bg-stone-50 border border-stone-200 rounded-2xl text-xs font-bold text-stone-900 outline-none focus:border-stone-900"
-              />
-              <Mail className="w-4 h-4 text-stone-400 absolute left-3 top-3.5" />
-            </div>
+            <label className="text-xs font-bold text-stone-700 block">Admin Email Address</label>
+            <input
+              type="email"
+              placeholder="owner@giftystore.com"
+              value={adminEmail}
+              onChange={(e) => setAdminEmail(e.target.value)}
+              className="w-full p-3.5 bg-stone-50 border border-stone-200 rounded-2xl text-xs font-bold text-stone-900 outline-none focus:border-stone-900"
+            />
           </div>
 
           <div className="space-y-1">
-            <label className="text-xs font-bold text-stone-700">Password / Access Code</label>
-            <div className="relative">
-              <input
-                type="password"
-                placeholder="••••••••"
-                value={adminPassword}
-                onChange={(e) => setAdminPassword(e.target.value)}
-                className="w-full pl-9 pr-4 py-3 bg-stone-50 border border-stone-200 rounded-2xl text-xs font-bold text-stone-900 outline-none focus:border-stone-900"
-              />
-              <Lock className="w-4 h-4 text-stone-400 absolute left-3 top-3.5" />
-            </div>
-            <p className="text-[10px] text-stone-400 pt-0.5">Default dev fallback password: <code className="text-stone-700 bg-stone-100 px-1 rounded font-bold">gifty2026</code></p>
+            <label className="text-xs font-bold text-stone-700 block">Admin Account Password</label>
+            <input
+              type="password"
+              placeholder="••••••••••••"
+              value={adminPassword}
+              onChange={(e) => setAdminPassword(e.target.value)}
+              className="w-full p-3.5 bg-stone-50 border border-stone-200 rounded-2xl text-xs font-bold text-stone-900 outline-none focus:border-stone-900"
+            />
           </div>
 
           <button
             type="submit"
-            disabled={lockoutTimer > 0 || isLoggingIn}
-            className="w-full bg-stone-900 hover:bg-black text-amber-400 font-extrabold py-3.5 rounded-2xl text-xs uppercase tracking-wider shadow-lg transition flex items-center justify-center gap-2"
+            disabled={isLoggingIn || lockoutTimer > 0}
+            className={`w-full font-black py-3.5 rounded-2xl text-xs uppercase tracking-wider shadow-xl transition ${
+              lockoutTimer > 0
+                ? 'bg-stone-300 text-stone-500 cursor-not-allowed'
+                : 'bg-stone-900 hover:bg-black text-amber-400'
+            }`}
           >
-            <ShieldCheck className="w-4 h-4 text-amber-400" />
-            <span>{isLoggingIn ? 'Verifying Auth...' : lockoutTimer > 0 ? `Locked (${lockoutTimer}s)` : 'Authenticate Owner Portal'}</span>
+            {isLoggingIn ? 'Authenticating...' : lockoutTimer > 0 ? `Locked (${lockoutTimer}s)` : 'Unlock Admin Dashboard'}
           </button>
         </form>
       </div>
@@ -353,479 +372,566 @@ export function AdminDashboard({ products, setProducts, showToast }) {
   }
 
   return (
-    <div className="space-y-8 bg-white rounded-3xl p-6 sm:p-8 border border-stone-200 shadow-xl">
-      {/* Admin Header Navbar with Sign Out */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-stone-200">
+    <div className="space-y-5 sm:space-y-8 bg-white rounded-3xl p-3.5 sm:p-8 border border-stone-200 shadow-xl max-w-7xl mx-auto w-full overflow-x-hidden">
+      {/* Uncongested Admin Header Bar for Mobile & Desktop */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 pb-4 sm:pb-6 border-b border-stone-200">
         <div>
-          <span className="text-[10px] font-black uppercase tracking-widest text-amber-700 bg-amber-50 px-3 py-1 rounded-full border border-amber-200">
-            Authenticated Store Owner {currentAdminUser?.email && `(${currentAdminUser.email})`}
+          <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-amber-700 bg-amber-50 px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full border border-amber-200 inline-block">
+            Authenticated Store Owner
           </span>
-          <h1 className="text-2xl sm:text-3xl font-serif font-black text-stone-900 mt-1">GIFTY Owner Control Center</h1>
+          <h1 className="text-lg sm:text-3xl font-serif font-black text-stone-900 mt-1">GIFTY Owner Control Center</h1>
         </div>
 
-        <div className="flex items-center gap-2">
-          <div className="flex bg-stone-100 p-1 rounded-2xl border border-stone-200 overflow-x-auto">
-            <button
-              onClick={() => setActiveTab('products')}
-              className={`px-3 py-2 sm:px-4 sm:py-2 rounded-xl text-xs font-bold transition whitespace-nowrap ${
-                activeTab === 'products' ? 'bg-stone-900 text-amber-400 shadow' : 'text-stone-600 hover:text-stone-900'
-              }`}
-            >
-              Catalog & Stock
-            </button>
-            <button
-              onClick={() => setActiveTab('negotiate')}
-              className={`px-3 py-2 sm:px-4 sm:py-2 rounded-xl text-xs font-bold transition whitespace-nowrap ${
-                activeTab === 'negotiate' ? 'bg-stone-900 text-amber-400 shadow' : 'text-stone-600 hover:text-stone-900'
-              }`}
-            >
-              Negotiated Links
-            </button>
-            <button
-              onClick={() => setActiveTab('security')}
-              className={`px-3 py-2 sm:px-4 sm:py-2 rounded-xl text-xs font-bold transition whitespace-nowrap ${
-                activeTab === 'security' ? 'bg-stone-900 text-amber-400 shadow' : 'text-stone-600 hover:text-stone-900'
-              }`}
-            >
-              Reset Admin Details
-            </button>
-          </div>
-
+        {/* Compact Sign Out Button */}
+        <div className="flex items-center justify-end gap-2">
           <button
             onClick={handleSignOut}
-            className="p-2.5 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-2xl text-xs font-bold transition flex items-center gap-1.5 shrink-0"
+            className="px-3 py-1.5 sm:px-3.5 sm:py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shrink-0 shadow-sm"
             title="Sign Out Admin"
           >
-            <LogOut className="w-4 h-4" />
-            <span className="hidden sm:inline">Sign Out</span>
+            <LogOut className="w-3.5 h-3.5" />
+            <span>Sign Out</span>
           </button>
         </div>
       </div>
 
-      {/* Main Admin Section Body */}
+      {/* Uncongested Segmented Tab Switcher — 100% Mobile Friendly Grid */}
+      <div className="grid grid-cols-3 gap-1 sm:gap-2 bg-stone-100 p-1 sm:p-1.5 rounded-2xl border border-stone-200 w-full overflow-hidden">
+        <button
+          onClick={() => setActiveTab('products')}
+          className={`py-2 px-1 sm:py-2.5 sm:px-2 rounded-xl text-[10px] sm:text-xs font-black transition text-center truncate ${
+            activeTab === 'products' ? 'bg-stone-900 text-amber-400 shadow-md' : 'text-stone-600 hover:text-stone-900'
+          }`}
+        >
+          Catalog & Stock
+        </button>
+        <button
+          onClick={() => setActiveTab('negotiate')}
+          className={`py-2 px-1 sm:py-2.5 sm:px-2 rounded-xl text-[10px] sm:text-xs font-black transition text-center truncate ${
+            activeTab === 'negotiate' ? 'bg-stone-900 text-amber-400 shadow-md' : 'text-stone-600 hover:text-stone-900'
+          }`}
+        >
+          Negotiated Links
+        </button>
+        <button
+          onClick={() => setActiveTab('security')}
+          className={`py-2 px-1 sm:py-2.5 sm:px-2 rounded-xl text-[10px] sm:text-xs font-black transition text-center truncate ${
+            activeTab === 'security' ? 'bg-stone-900 text-amber-400 shadow-md' : 'text-stone-600 hover:text-stone-900'
+          }`}
+        >
+          Reset Admin
+        </button>
+      </div>
+
+      {/* Catalog & Stock Tab */}
       {activeTab === 'products' && (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Add / Edit Form */}
-          <div className="lg:col-span-1 bg-stone-50 p-6 rounded-3xl border border-stone-200 space-y-4">
-            <h3 className="text-lg font-serif font-black text-stone-900 flex items-center gap-2">
-              {editingId ? <Edit3 className="w-5 h-5 text-amber-600" /> : <Plus className="w-5 h-5 text-amber-600" />}
-              {editingId ? 'Edit Dress & Restock' : 'Upload New Dress'}
-            </h3>
+        <div className="space-y-5 sm:space-y-6 w-full overflow-x-hidden">
+          {/* Mobile Collapsible Upload Button Toggle */}
+          <div className="lg:hidden">
+            <button
+              onClick={() => setShowMobileForm(!showMobileForm)}
+              className="w-full bg-stone-900 text-amber-400 font-extrabold py-3 px-4 rounded-2xl text-xs flex items-center justify-between shadow-md"
+            >
+              <span className="flex items-center gap-2">
+                <Plus className="w-4 h-4 text-amber-400" />
+                {editingId ? 'Edit Outfit Form' : 'Upload New Outfit'}
+              </span>
+              <span>{showMobileForm ? '▲ Hide Form' : '▼ Expand Form'}</span>
+            </button>
+          </div>
 
-            {formError && (
-              <div className="bg-rose-50 text-rose-700 p-3 rounded-xl text-xs font-bold border border-rose-200">
-                {formError}
-              </div>
-            )}
-            {formSuccess && (
-              <div className="bg-emerald-50 text-emerald-800 p-3 rounded-xl text-xs font-bold border border-emerald-200">
-                {formSuccess}
-              </div>
-            )}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8 w-full">
+            {/* Add / Edit Form (Collapsible on Mobile, Persistent on Desktop) */}
+            <div className={`lg:col-span-1 bg-stone-50 p-4 sm:p-6 rounded-3xl border border-stone-200 space-y-4 w-full ${showMobileForm ? 'block' : 'hidden lg:block'}`}>
+              <h3 className="text-base sm:text-lg font-serif font-black text-stone-900 flex items-center gap-2">
+                {editingId ? <Edit3 className="w-5 h-5 text-amber-600" /> : <Plus className="w-5 h-5 text-amber-600" />}
+                {editingId ? 'Edit Dress & Restock' : 'Upload New Dress'}
+              </h3>
 
-            <form onSubmit={handleSubmit} className="space-y-4 text-xs">
-              <div className="space-y-1">
-                <label className="font-bold text-stone-700">Dress / Outfit Name</label>
-                <input
-                  type="text"
-                  placeholder="e.g. Royal Ankara Corset Gown"
-                  value={form.name}
-                  onChange={(e) => setForm((prev) => ({ ...prev, name: e.target.value }))}
-                  className="w-full p-3 bg-white border border-stone-200 rounded-xl font-bold text-stone-900 outline-none"
-                />
-              </div>
+              {formError && (
+                <div className="bg-rose-50 text-rose-700 p-3 rounded-xl text-xs font-bold border border-rose-200">
+                  {formError}
+                </div>
+              )}
+              {formSuccess && (
+                <div className="bg-emerald-50 text-emerald-800 p-3 rounded-xl text-xs font-bold border border-emerald-200">
+                  {formSuccess}
+                </div>
+              )}
 
-              <div className="grid grid-cols-2 gap-3">
+              <form onSubmit={handleSubmit} className="space-y-3.5 text-xs w-full">
                 <div className="space-y-1">
-                  <label className="font-bold text-stone-700">Price (NGN ₦)</label>
+                  <label className="font-bold text-stone-700 block">Dress / Outfit Name</label>
                   <input
-                    type="number"
-                    placeholder="e.g. 55000"
-                    value={form.price}
-                    onChange={(e) => setForm((prev) => ({ ...prev, price: e.target.value }))}
+                    type="text"
+                    placeholder="e.g. Royal Ankara Corset Gown"
+                    value={form.name}
+                    onChange={(e) => setForm((prev) => ({ ...prev, name: e.target.value }))}
                     className="w-full p-3 bg-white border border-stone-200 rounded-xl font-bold text-stone-900 outline-none"
                   />
                 </div>
 
+                <div className="grid grid-cols-2 gap-2.5">
+                  <div className="space-y-1">
+                    <label className="font-bold text-stone-700 block">Price (NGN ₦)</label>
+                    <input
+                      type="number"
+                      placeholder="e.g. 55000"
+                      value={form.price}
+                      onChange={(e) => setForm((prev) => ({ ...prev, price: e.target.value }))}
+                      className="w-full p-3 bg-white border border-stone-200 rounded-xl font-bold text-stone-900 outline-none"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="font-bold text-stone-700 flex items-center gap-1">
+                      <Package className="w-3.5 h-3.5 text-amber-600" /> Stock Units
+                    </label>
+                    <input
+                      type="number"
+                      min="0"
+                      placeholder="e.g. 5"
+                      value={form.stock}
+                      onChange={(e) => setForm((prev) => ({ ...prev, stock: e.target.value }))}
+                      className="w-full p-3 bg-white border border-stone-200 rounded-xl font-black text-stone-900 outline-none"
+                    />
+                  </div>
+                </div>
+
                 <div className="space-y-1">
-                  <label className="font-bold text-stone-700 flex items-center gap-1">
-                    <Package className="w-3.5 h-3.5 text-amber-600" /> Stock Units
-                  </label>
-                  <input
-                    type="number"
-                    min="0"
-                    placeholder="e.g. 5"
-                    value={form.stock}
-                    onChange={(e) => setForm((prev) => ({ ...prev, stock: e.target.value }))}
-                    className="w-full p-3 bg-white border border-stone-200 rounded-xl font-black text-stone-900 outline-none"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-1">
-                <label className="font-bold text-stone-700">Category</label>
-                <select
-                  value={form.category}
-                  onChange={(e) => setForm((prev) => ({ ...prev, category: e.target.value }))}
-                  className="w-full p-3 bg-white border border-stone-200 rounded-xl font-bold text-stone-900 outline-none"
-                >
-                  <option value="Corset Gowns">Corset Gowns</option>
-                  <option value="Two-Piece">Two-Piece</option>
-                  <option value="Owambe">Owambe</option>
-                </select>
-              </div>
-
-              <div className="space-y-2 pt-1">
-                <label className="font-bold text-stone-700 block">Outfit Photo (URL or Device Upload)</label>
-                <input
-                  type="text"
-                  placeholder="https://images.unsplash.com/..."
-                  value={form.image}
-                  onChange={(e) => setForm((prev) => ({ ...prev, image: e.target.value }))}
-                  className="w-full p-3 bg-white border border-stone-200 rounded-xl font-bold text-stone-900 outline-none"
-                />
-
-                <div className="relative">
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageFileUpload}
-                    className="hidden"
-                    id="device-photo-upload"
-                  />
-                  <label
-                    htmlFor="device-photo-upload"
-                    className="w-full bg-stone-200 hover:bg-stone-300 text-stone-900 font-bold py-2.5 rounded-xl text-xs flex items-center justify-center gap-2 cursor-pointer transition border border-stone-300"
+                  <label className="font-bold text-stone-700 block">Category</label>
+                  <select
+                    value={form.category}
+                    onChange={(e) => setForm((prev) => ({ ...prev, category: e.target.value }))}
+                    className="w-full p-3 bg-white border border-stone-200 rounded-xl font-bold text-stone-900 outline-none"
                   >
-                    <Upload className="w-4 h-4 text-amber-700" /> Upload Direct Photo from Phone / PC
-                  </label>
+                    <option value="Corset Gowns">Corset Gowns</option>
+                    <option value="Two-Piece">Two-Piece</option>
+                    <option value="Owambe">Owambe</option>
+                  </select>
                 </div>
-              </div>
 
-              <div className="space-y-1">
-                <label className="font-bold text-stone-700">Video Reels URL (Optional)</label>
-                <input
-                  type="text"
-                  placeholder="https://assets.mixkit.co/..."
-                  value={form.video_url}
-                  onChange={(e) => setForm((prev) => ({ ...prev, video_url: e.target.value }))}
-                  className="w-full p-3 bg-white border border-stone-200 rounded-xl font-bold text-stone-900 outline-none"
-                />
-              </div>
+                <div className="space-y-2 pt-1">
+                  <label className="font-bold text-stone-700 block">Outfit Photo (URL or Device Upload)</label>
+                  <input
+                    type="text"
+                    placeholder="https://images.unsplash.com/..."
+                    value={form.image}
+                    onChange={(e) => setForm((prev) => ({ ...prev, image: e.target.value }))}
+                    className="w-full p-3 bg-white border border-stone-200 rounded-xl font-bold text-stone-900 outline-none"
+                  />
 
-              <div className="pt-2 flex items-center gap-2">
-                <button
-                  type="submit"
-                  className="flex-1 bg-stone-900 hover:bg-black text-amber-400 font-extrabold py-3.5 rounded-xl shadow-lg transition"
-                >
-                  {editingId ? 'Save Outfit & Stock' : 'Publish Outfit'}
-                </button>
-                {editingId && (
+                  <div>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageFileUpload}
+                      className="hidden"
+                      id="device-photo-upload"
+                    />
+                    <label
+                      htmlFor="device-photo-upload"
+                      className="w-full bg-stone-200 hover:bg-stone-300 text-stone-900 font-bold py-2.5 rounded-xl text-xs flex items-center justify-center gap-2 cursor-pointer transition border border-stone-300"
+                    >
+                      <Upload className="w-4 h-4 text-amber-700" /> Upload Photo from Phone / PC
+                    </label>
+                  </div>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="font-bold text-stone-700 block">Video Reels URL (Optional)</label>
+                  <input
+                    type="text"
+                    placeholder="https://assets.mixkit.co/..."
+                    value={form.video_url}
+                    onChange={(e) => setForm((prev) => ({ ...prev, video_url: e.target.value }))}
+                    className="w-full p-3 bg-white border border-stone-200 rounded-xl font-bold text-stone-900 outline-none"
+                  />
+                </div>
+
+                <div className="pt-2 flex items-center gap-2">
                   <button
-                    type="button"
-                    onClick={() => {
-                      setEditingId(null);
-                      setForm({ name: '', price: '', category: 'Corset Gowns', image: '', video_url: '', sizes: ['S', 'M', 'L', 'XL'], is_tiktok_featured: true, stock: 5 });
-                    }}
-                    className="px-4 py-3.5 bg-stone-200 hover:bg-stone-300 text-stone-700 font-bold rounded-xl"
+                    type="submit"
+                    className="flex-1 bg-stone-900 hover:bg-black text-amber-400 font-extrabold py-3.5 rounded-xl shadow-lg transition"
                   >
-                    Cancel
+                    {editingId ? 'Save Outfit & Stock' : 'Publish Outfit'}
                   </button>
+                  {editingId && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEditingId(null);
+                        setForm({ name: '', price: '', category: 'Corset Gowns', image: '', video_url: '', sizes: ['S', 'M', 'L', 'XL'], is_tiktok_featured: true, stock: 5 });
+                        setShowMobileForm(false);
+                      }}
+                      className="px-3.5 py-3.5 bg-stone-200 hover:bg-stone-300 text-stone-700 font-bold rounded-xl"
+                    >
+                      Cancel
+                    </button>
+                  )}
+                </div>
+              </form>
+            </div>
+
+            {/* Product List with Instant Search, Filter, & Pagination */}
+            <div className="lg:col-span-2 space-y-4 w-full overflow-x-hidden">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <h3 className="text-base sm:text-lg font-serif font-black text-stone-900">
+                  Live Inventory Outfits ({filteredAdminProducts.length})
+                </h3>
+              </div>
+
+              {/* Admin Instant Search & Category Filter Controls */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 w-full">
+                <div className="sm:col-span-2 relative w-full">
+                  <input
+                    type="text"
+                    placeholder="Quick search catalog by name..."
+                    value={adminSearch}
+                    onChange={(e) => {
+                      setAdminSearch(e.target.value);
+                      setCurrentPage(1);
+                    }}
+                    className="w-full pl-8 pr-8 py-2 bg-stone-50 border border-stone-200 rounded-xl text-xs font-bold text-stone-900 outline-none"
+                  />
+                  <Search className="w-3.5 h-3.5 text-amber-600 absolute left-2.5 top-2.5 pointer-events-none" />
+                  {adminSearch && (
+                    <button
+                      onClick={() => setAdminSearch('')}
+                      className="absolute right-2 top-2 text-stone-400 hover:text-stone-900 text-xs font-bold"
+                    >
+                      ✕
+                    </button>
+                  )}
+                </div>
+
+                <div className="w-full">
+                  <select
+                    value={adminCategory}
+                    onChange={(e) => {
+                      setAdminCategory(e.target.value);
+                      setCurrentPage(1);
+                    }}
+                    className="w-full py-2 px-2.5 bg-stone-50 border border-stone-200 rounded-xl text-xs font-bold text-stone-800 outline-none"
+                  >
+                    <option value="All">All Categories</option>
+                    <option value="Corset Gowns">Corset Gowns</option>
+                    <option value="Two-Piece">Two-Piece</option>
+                    <option value="Owambe">Owambe</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Paginated Product List (5 Items per Page) */}
+              <div className="space-y-3 min-h-[340px] w-full">
+                {paginatedProducts.length === 0 ? (
+                  <div className="py-12 text-center bg-stone-50 rounded-2xl border border-stone-200 text-stone-400 text-xs font-bold">
+                    No outfits match your search criteria.
+                  </div>
+                ) : (
+                  paginatedProducts.map((item) => {
+                    const isSoldOut = item.stock === 0;
+
+                    return (
+                      <div key={item.id} className="flex flex-col sm:flex-row sm:items-center justify-between bg-stone-50 p-3 sm:p-3.5 rounded-2xl border border-stone-200 gap-3 w-full overflow-hidden">
+                        <div className="flex items-center gap-3 min-w-0">
+                          <img src={item.image} alt={item.name} className={`w-12 h-14 object-cover rounded-xl shadow-sm shrink-0 ${isSoldOut ? 'grayscale brightness-75' : ''}`} />
+
+                          <div className="min-w-0 flex-1 overflow-hidden">
+                            <div className="flex items-center gap-1.5">
+                              <span className="text-[9px] font-bold text-amber-700 uppercase tracking-wider block shrink-0">{item.category}</span>
+                              {isSoldOut ? (
+                                <span className="bg-stone-900 text-white text-[8px] font-black px-1.5 py-0.5 rounded-full uppercase shrink-0">
+                                  SOLD OUT
+                                </span>
+                              ) : item.stock <= 3 ? (
+                                <span className="bg-amber-500 text-stone-950 text-[8px] font-black px-1.5 py-0.5 rounded-full uppercase shrink-0">
+                                  LOW ({item.stock})
+                                </span>
+                              ) : null}
+                            </div>
+                            <h4 className="font-bold text-xs sm:text-sm text-stone-900 truncate">{item.name}</h4>
+                            <p className="text-xs font-black text-amber-600">NGN {Number(item.price).toLocaleString()}</p>
+                          </div>
+                        </div>
+
+                        {/* Uncongested Non-Overflowing Mobile Stock Counter & Action Buttons */}
+                        <div className="flex flex-wrap items-center justify-between sm:justify-end gap-2 pt-2 sm:pt-0 border-t sm:border-t-0 border-stone-200/80 w-full sm:w-auto">
+                          {/* Stock Controls */}
+                          <div className="flex items-center gap-1 bg-white p-1 rounded-xl border border-stone-200 shrink-0">
+                            <span className="text-[10px] font-bold text-stone-500 px-1">Stock:</span>
+                            <span className={`text-xs font-black px-1 ${isSoldOut ? 'text-rose-600' : 'text-stone-900'}`}>
+                              {item.stock !== undefined ? item.stock : 5}
+                            </span>
+
+                            <button
+                              onClick={() => handleQuickStockUpdate(item, (item.stock || 0) + 1)}
+                              className="px-1.5 py-0.5 bg-stone-100 hover:bg-stone-200 text-stone-900 text-[10px] font-black rounded transition"
+                              title="Restock +1 unit"
+                            >
+                              +1
+                            </button>
+                            <button
+                              onClick={() => handleQuickStockUpdate(item, (item.stock || 0) + 5)}
+                              className="px-1.5 py-0.5 bg-amber-400 hover:bg-amber-300 text-stone-950 text-[10px] font-black rounded transition"
+                              title="Restock +5 units"
+                            >
+                              +5
+                            </button>
+                            {item.stock > 0 && (
+                              <button
+                                onClick={() => handleQuickStockUpdate(item, 0)}
+                                className="px-1 py-0.5 bg-rose-50 hover:bg-rose-100 text-rose-700 text-[9px] font-bold rounded transition"
+                                title="Mark as Sold Out"
+                              >
+                                Mark 0
+                              </button>
+                            )}
+                          </div>
+
+                          {/* Edit / Delete Buttons */}
+                          <div className="flex items-center gap-1.5 shrink-0">
+                            <button
+                              onClick={() => handleEditClick(item)}
+                              className="p-2 bg-white hover:bg-stone-100 text-stone-700 rounded-xl border border-stone-200 shadow-sm transition"
+                              title="Edit outfit"
+                            >
+                              <Edit3 className="w-3.5 h-3.5 text-amber-700" />
+                            </button>
+
+                            <button
+                              onClick={() => setDeleteConfirmProduct(item)}
+                              className="p-2 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-xl border border-rose-200 transition"
+                              title="Delete outfit"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })
                 )}
               </div>
-            </form>
-          </div>
 
-          {/* Product List with Direct Stock Restock Counter */}
-          <div className="lg:col-span-2 space-y-4">
-            <h3 className="text-lg font-serif font-black text-stone-900">Live Inventory Outfits ({products.length})</h3>
-
-            <div className="space-y-3 max-h-[600px] overflow-y-auto pr-1">
-              {products.map((item) => {
-                const isSoldOut = item.stock === 0;
-
-                return (
-                  <div key={item.id} className="flex flex-col sm:flex-row sm:items-center justify-between bg-stone-50 p-4 rounded-2xl border border-stone-200 gap-4">
-                    <div className="flex items-center gap-3.5">
-                      <img src={item.image} alt={item.name} className={`w-14 h-16 object-cover rounded-xl shadow-sm ${isSoldOut ? 'grayscale brightness-75' : ''}`} />
-
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <span className="text-[10px] font-bold text-amber-700 uppercase tracking-wider block">{item.category}</span>
-                          {isSoldOut ? (
-                            <span className="bg-stone-900 text-white text-[9px] font-black px-2 py-0.5 rounded-full uppercase">
-                              SOLD OUT
-                            </span>
-                          ) : item.stock <= 3 ? (
-                            <span className="bg-amber-500 text-stone-950 text-[9px] font-black px-2 py-0.5 rounded-full uppercase">
-                              LOW STOCK ({item.stock})
-                            </span>
-                          ) : null}
-                        </div>
-                        <h4 className="font-bold text-sm text-stone-900 truncate">{item.name}</h4>
-                        <p className="text-xs font-black text-amber-600">NGN {Number(item.price).toLocaleString()}</p>
-                      </div>
-                    </div>
-
-                    {/* Quick Restock Counter Buttons */}
-                    <div className="flex items-center gap-3 pt-2 sm:pt-0 border-t sm:border-t-0 border-stone-200">
-                      <div className="flex items-center gap-1 bg-white p-1 rounded-xl border border-stone-200">
-                        <span className="text-[11px] font-bold text-stone-500 px-1.5">Stock:</span>
-                        <span className={`text-xs font-black px-1.5 ${isSoldOut ? 'text-rose-600' : 'text-stone-900'}`}>
-                          {item.stock !== undefined ? item.stock : 5}
-                        </span>
-
-                        <button
-                          onClick={() => handleQuickStockUpdate(item, (item.stock || 0) + 1)}
-                          className="px-2 py-0.5 bg-stone-100 hover:bg-stone-200 text-stone-900 text-xs font-black rounded-lg transition"
-                          title="Restock +1 unit"
-                        >
-                          +1
-                        </button>
-                        <button
-                          onClick={() => handleQuickStockUpdate(item, (item.stock || 0) + 5)}
-                          className="px-2 py-0.5 bg-amber-400 hover:bg-amber-300 text-stone-950 text-xs font-black rounded-lg transition"
-                          title="Restock +5 units"
-                        >
-                          +5
-                        </button>
-                        {item.stock > 0 && (
-                          <button
-                            onClick={() => handleQuickStockUpdate(item, 0)}
-                            className="px-1.5 py-0.5 bg-rose-50 hover:bg-rose-100 text-rose-700 text-[10px] font-bold rounded-lg transition"
-                            title="Mark as Sold Out"
-                          >
-                            Mark 0
-                          </button>
-                        )}
-                      </div>
-
-                      <div className="flex items-center gap-1.5">
-                        <button
-                          onClick={() => startEdit(item)}
-                          className="p-2 bg-white hover:bg-amber-50 text-amber-700 border border-stone-200 rounded-xl transition"
-                          title="Edit Dress"
-                        >
-                          <Edit3 className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={() => setDeleteConfirmProduct(item)}
-                          className="p-2 bg-white hover:bg-rose-50 text-rose-600 border border-stone-200 rounded-xl transition"
-                          title="Delete Dress"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </div>
+              {/* Admin Pagination Controls */}
+              {totalPages > 1 && (
+                <div className="flex items-center justify-between pt-3 border-t border-stone-200 text-xs font-bold text-stone-600">
+                  <span>Page {currentPage} of {totalPages}</span>
+                  <div className="flex items-center gap-2">
+                    <button
+                      disabled={currentPage === 1}
+                      onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+                      className={`px-3 py-1.5 rounded-xl border flex items-center gap-1 transition ${
+                        currentPage === 1 ? 'bg-stone-100 text-stone-400 border-stone-200' : 'bg-white hover:bg-stone-100 text-stone-900 border-stone-300'
+                      }`}
+                    >
+                      <ChevronLeft className="w-3.5 h-3.5" /> Prev
+                    </button>
+                    <button
+                      disabled={currentPage === totalPages}
+                      onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+                      className={`px-3 py-1.5 rounded-xl border flex items-center gap-1 transition ${
+                        currentPage === totalPages ? 'bg-stone-100 text-stone-400 border-stone-200' : 'bg-white hover:bg-stone-100 text-stone-900 border-stone-300'
+                      }`}
+                    >
+                      Next <ChevronRight className="w-3.5 h-3.5" />
+                    </button>
                   </div>
-                );
-              })}
+                </div>
+              )}
             </div>
           </div>
         </div>
       )}
 
-      {/* Negotiated Payment Link Generator Tab */}
+      {/* Negotiated Link Generator Tab */}
       {activeTab === 'negotiate' && (
-        <div className="max-w-xl mx-auto space-y-6 bg-stone-50 p-6 sm:p-8 rounded-3xl border border-stone-200">
-          <div>
-            <h3 className="text-xl font-serif font-black text-stone-900 flex items-center gap-2">
-              <Sparkles className="w-5 h-5 text-amber-600" /> 1-Click Negotiated Link Generator
+        <div className="max-w-xl mx-auto space-y-6 bg-stone-50 p-5 sm:p-8 rounded-3xl border border-stone-200 w-full overflow-x-hidden">
+          <div className="space-y-1">
+            <h3 className="text-base sm:text-lg font-serif font-black text-stone-900 flex items-center gap-2">
+              <Tag className="w-5 h-5 text-amber-600" /> WhatsApp Negotiated Price Link Generator
             </h3>
-            <p className="text-xs text-stone-500 mt-1">
-              Generate a custom, pre-discounted website checkout link for WhatsApp customers who negotiated a lower price!
+            <p className="text-xs text-stone-500">
+              Create a custom payment link for a customer after WhatsApp price negotiations.
             </p>
           </div>
 
           {negotiateError && (
-            <div className="bg-rose-50 text-rose-700 p-3 rounded-xl text-xs font-bold border border-rose-200">
+            <div className="bg-rose-50 text-rose-700 p-3.5 rounded-2xl text-xs font-bold border border-rose-200">
               {negotiateError}
             </div>
           )}
 
-          <form onSubmit={handleGenerateNegotiatedLink} className="space-y-4 text-xs">
+          <form onSubmit={handleGenerateLink} className="space-y-4 text-xs w-full">
             <div className="space-y-1">
-              <label className="font-bold text-stone-700">Select Outfit</label>
+              <label className="font-bold text-stone-700 block">Select Outfit</label>
               <select
                 value={negotiatedProduct}
                 onChange={(e) => setNegotiatedProduct(e.target.value)}
-                className="w-full p-3 bg-white border border-stone-200 rounded-xl font-bold text-stone-900 outline-none"
+                className="w-full p-3.5 bg-white border border-stone-200 rounded-2xl font-bold text-stone-900 outline-none"
               >
                 <option value="">-- Choose Outfit --</option>
                 {products.map((p) => (
-                  <option key={p.id} value={p.name}>{p.name} (Original: NGN {Number(p.price).toLocaleString()})</option>
+                  <option key={p.id} value={p.id}>
+                    {p.name} (Listed: NGN {Number(p.price).toLocaleString()})
+                  </option>
                 ))}
               </select>
             </div>
 
             <div className="space-y-1">
-              <label className="font-bold text-stone-700">Agreed Negotiated Price (NGN ₦)</label>
+              <label className="font-bold text-stone-700 block">Agreed Discounted Price (NGN ₦)</label>
               <input
                 type="number"
                 placeholder="e.g. 45000"
                 value={discountedPrice}
                 onChange={(e) => setDiscountedPrice(e.target.value)}
-                className="w-full p-3 bg-white border border-stone-200 rounded-xl font-bold text-stone-900 outline-none"
+                className="w-full p-3.5 bg-white border border-stone-200 rounded-2xl font-black text-stone-900 outline-none"
               />
             </div>
 
             <button
               type="submit"
-              className="w-full bg-stone-900 hover:bg-black text-amber-400 font-extrabold py-3.5 rounded-xl text-xs uppercase tracking-wider shadow-lg transition"
+              className="w-full bg-stone-900 hover:bg-black text-amber-400 font-black py-3.5 rounded-2xl text-xs uppercase tracking-wider shadow-lg transition"
             >
-              Generate Discount Payment Link
+              Generate Discounted Link
             </button>
           </form>
 
           {generatedLink && (
-            <div className="space-y-3 bg-white p-4 rounded-2xl border border-stone-200">
-              <label className="font-bold text-xs text-stone-800 block">Generated Link:</label>
-              <input
-                type="text"
-                readOnly
-                value={generatedLink}
-                className="w-full p-3 bg-stone-50 border border-stone-200 rounded-xl text-xs font-mono text-stone-800 outline-none"
-              />
+            <div className="pt-4 border-t border-stone-200 space-y-3 w-full">
+              <span className="text-[10px] font-black uppercase tracking-wider text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200 inline-block">
+                Generated Customer Payment Link
+              </span>
+              
+              <div className="p-3 bg-white border border-stone-200 rounded-2xl break-all text-xs font-mono text-stone-800">
+                {generatedLink}
+              </div>
+
               <button
                 onClick={copyGeneratedLink}
-                className="w-full bg-amber-500 hover:bg-amber-400 text-stone-950 font-black py-3 rounded-xl text-xs flex items-center justify-center gap-2 transition shadow"
+                className="w-full bg-amber-400 hover:bg-amber-300 text-stone-950 font-black py-3 rounded-2xl text-xs flex items-center justify-center gap-2 shadow-md transition"
               >
-                <Copy className="w-4 h-4" />
-                <span>{copiedLink ? 'Link Copied to Clipboard!' : 'Copy Link & Send on WhatsApp'}</span>
+                {copiedLink ? <Check className="w-4 h-4 text-stone-950" /> : <Copy className="w-4 h-4 text-stone-950" />}
+                <span>{copiedLink ? 'Link Copied to Clipboard!' : 'Copy Link for Customer'}</span>
               </button>
             </div>
           )}
         </div>
       )}
 
-      {/* Reset Admin Credentials Tab */}
+      {/* Security Credentials Reset Tab */}
       {activeTab === 'security' && (
-        <div className="max-w-xl mx-auto space-y-8 bg-stone-50 p-6 sm:p-8 rounded-3xl border border-stone-200">
-          <div>
-            <span className="text-[10px] font-black uppercase tracking-widest text-amber-700 bg-amber-100 px-3 py-1 rounded-full border border-amber-200">
-              Admin Account Credentials
-            </span>
-            <h3 className="text-xl font-serif font-black text-stone-900 mt-2 flex items-center gap-2">
-              <Key className="w-5 h-5 text-amber-600" /> Reset Admin Email & Password
+        <div className="max-w-xl mx-auto space-y-6 bg-stone-50 p-5 sm:p-8 rounded-3xl border border-stone-200 w-full overflow-x-hidden">
+          <div className="space-y-1">
+            <h3 className="text-base sm:text-lg font-serif font-black text-stone-900 flex items-center gap-2">
+              <Key className="w-5 h-5 text-amber-600" /> Reset Admin Login Details
             </h3>
-            <p className="text-xs text-stone-500 mt-1">
-              Update your store owner login email and password securely in Supabase Auth.
+            <p className="text-xs text-stone-500">
+              Update your store owner email address or change your login password directly in Supabase Auth.
             </p>
           </div>
 
-          {/* Reset Admin Email Form */}
-          <div className="bg-white p-5 rounded-2xl border border-stone-200 space-y-3 shadow-sm">
-            <h4 className="font-bold text-xs text-stone-900 flex items-center gap-1.5">
-              <Mail className="w-4 h-4 text-amber-600" /> Reset Admin Email
+          {/* Email Update Form */}
+          <div className="bg-white p-4 sm:p-5 rounded-2xl border border-stone-200 space-y-3 w-full">
+            <h4 className="font-extrabold text-xs text-stone-900 flex items-center gap-2">
+              <Mail className="w-4 h-4 text-amber-600" /> Change Admin Email Address
             </h4>
 
             {emailChangeError && (
-              <div className="bg-rose-50 text-rose-700 p-3 rounded-xl text-xs font-bold border border-rose-200 flex items-center gap-2">
-                <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
-                <span>{emailChangeError}</span>
+              <div className="bg-rose-50 text-rose-700 p-3 rounded-xl text-xs font-bold border border-rose-200">
+                {emailChangeError}
               </div>
             )}
-
             {emailChangeSuccess && (
-              <div className="bg-emerald-50 text-emerald-800 p-3 rounded-xl text-xs font-bold border border-emerald-200 flex items-center gap-2">
-                <Check className="w-4 h-4 text-emerald-600 shrink-0" />
-                <span>{emailChangeSuccess}</span>
+              <div className="bg-emerald-50 text-emerald-800 p-3 rounded-xl text-xs font-bold border border-emerald-200">
+                {emailChangeSuccess}
               </div>
             )}
 
-            <form onSubmit={handleEmailChange} className="space-y-3 text-xs">
-              <div className="space-y-1">
-                <label className="font-bold text-stone-700">New Admin Email Address</label>
-                <input
-                  type="email"
-                  placeholder="owner@giftystore.com"
-                  value={newEmailInput}
-                  onChange={(e) => setNewEmailInput(e.target.value)}
-                  className="w-full p-3 bg-stone-50 border border-stone-200 rounded-xl font-bold text-stone-900 outline-none"
-                />
-              </div>
-
+            <form onSubmit={handleUpdateEmail} className="space-y-3 text-xs w-full">
+              <input
+                type="email"
+                placeholder="newowner@giftystore.com"
+                value={newEmailInput}
+                onChange={(e) => setNewEmailInput(e.target.value)}
+                className="w-full p-3 bg-stone-50 border border-stone-200 rounded-xl font-bold text-stone-900 outline-none"
+              />
               <button
                 type="submit"
                 disabled={isUpdatingEmail}
-                className="w-full bg-stone-900 hover:bg-black text-amber-400 font-extrabold py-3 rounded-xl text-xs uppercase tracking-wider shadow transition"
+                className="w-full bg-stone-900 hover:bg-black text-amber-400 font-bold py-2.5 rounded-xl transition"
               >
                 {isUpdatingEmail ? 'Updating Email...' : 'Update Admin Email'}
               </button>
             </form>
           </div>
 
-          {/* Reset Admin Password Form */}
-          <div className="bg-white p-5 rounded-2xl border border-stone-200 space-y-3 shadow-sm">
-            <h4 className="font-bold text-xs text-stone-900 flex items-center gap-1.5">
-              <Lock className="w-4 h-4 text-amber-600" /> Reset Admin Password
+          {/* Password Update Form */}
+          <div className="bg-white p-4 sm:p-5 rounded-2xl border border-stone-200 space-y-3 w-full">
+            <h4 className="font-extrabold text-xs text-stone-900 flex items-center gap-2">
+              <Lock className="w-4 h-4 text-amber-600" /> Change Admin Password
             </h4>
 
             {passwordChangeError && (
-              <div className="bg-rose-50 text-rose-700 p-3 rounded-xl text-xs font-bold border border-rose-200 flex items-center gap-2">
-                <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
-                <span>{passwordChangeError}</span>
+              <div className="bg-rose-50 text-rose-700 p-3 rounded-xl text-xs font-bold border border-rose-200">
+                {passwordChangeError}
               </div>
             )}
-
             {passwordChangeSuccess && (
-              <div className="bg-emerald-50 text-emerald-800 p-3 rounded-xl text-xs font-bold border border-emerald-200 flex items-center gap-2">
-                <Check className="w-4 h-4 text-emerald-600 shrink-0" />
-                <span>{passwordChangeSuccess}</span>
+              <div className="bg-emerald-50 text-emerald-800 p-3 rounded-xl text-xs font-bold border border-emerald-200">
+                {passwordChangeSuccess}
               </div>
             )}
 
-            <form onSubmit={handlePasswordChange} className="space-y-3 text-xs">
-              <div className="space-y-1">
-                <label className="font-bold text-stone-700">New Admin Password (Minimum 6 characters)</label>
-                <input
-                  type="password"
-                  placeholder="Enter new strong password"
-                  value={newPasswordInput}
-                  onChange={(e) => setNewPasswordInput(e.target.value)}
-                  className="w-full p-3 bg-stone-50 border border-stone-200 rounded-xl font-bold text-stone-900 outline-none"
-                />
-              </div>
-
+            <form onSubmit={handleUpdatePassword} className="space-y-3 text-xs w-full">
+              <input
+                type="password"
+                placeholder="New strong password (min 6 chars)"
+                value={newPasswordInput}
+                onChange={(e) => setNewPasswordInput(e.target.value)}
+                className="w-full p-3 bg-stone-50 border border-stone-200 rounded-xl font-bold text-stone-900 outline-none"
+              />
               <button
                 type="submit"
                 disabled={isUpdatingPassword}
-                className="w-full bg-stone-900 hover:bg-black text-amber-400 font-extrabold py-3 rounded-xl text-xs uppercase tracking-wider shadow transition"
+                className="w-full bg-amber-500 hover:bg-amber-400 text-stone-950 font-black py-2.5 rounded-xl transition"
               >
-                {isUpdatingPassword ? 'Updating Password...' : 'Save New Admin Password'}
+                {isUpdatingPassword ? 'Updating Password...' : 'Update Admin Password'}
               </button>
             </form>
           </div>
         </div>
       )}
 
-      {/* Delete Confirmation Modal */}
+      {/* Delete Product Confirmation Modal */}
       {deleteConfirmProduct && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl max-w-sm w-full p-6 text-center space-y-4 shadow-2xl relative">
-            <div className="w-12 h-12 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center mx-auto">
-              <Trash2 className="w-6 h-6" />
+            <div className="w-12 h-12 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center mx-auto shadow">
+              <AlertTriangle className="w-6 h-6" />
             </div>
 
             <div>
               <h3 className="text-lg font-serif font-black text-stone-900">Delete Outfit?</h3>
-              <p className="text-xs text-stone-500 mt-1">
-                Are you sure you want to remove <strong>"{deleteConfirmProduct.name}"</strong> from your live boutique catalog?
+              <p className="text-xs text-stone-500">
+                Are you sure you want to permanently remove "{deleteConfirmProduct.name}" from your store catalog?
               </p>
             </div>
 
             <div className="grid grid-cols-2 gap-3 pt-2">
               <button
                 onClick={() => setDeleteConfirmProduct(null)}
-                className="w-full bg-stone-100 hover:bg-stone-200 text-stone-800 font-bold py-3 rounded-xl text-xs"
+                className="w-full bg-stone-100 hover:bg-stone-200 text-stone-700 font-bold py-3 rounded-xl text-xs transition"
               >
                 Cancel
               </button>
               <button
                 onClick={confirmDelete}
-                className="w-full bg-rose-600 hover:bg-rose-700 text-white font-bold py-3 rounded-xl text-xs shadow"
+                className="w-full bg-rose-600 hover:bg-rose-700 text-white font-bold py-3 rounded-xl text-xs shadow transition"
               >
-                Delete Outfit
+                Yes, Delete
               </button>
             </div>
           </div>
