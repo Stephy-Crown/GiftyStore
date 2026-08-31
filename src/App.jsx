@@ -4,7 +4,7 @@ import { getFashionProducts } from './services/supabase';
 import { TikTokShopSection } from './components/fashion/TikTokShopSection';
 import { AdminDashboard } from './pages/AdminDashboard';
 import CheckoutModal from './components/CheckoutModal';
-import { Crown, Flame, Trash2, MapPin, ArrowRight, Heart, X, Share2, Copy, Send, Twitter, Store, ShoppingCart, SlidersHorizontal, Eye, ExternalLink, ChevronDown, AlertTriangle, Sparkles, Plus, Minus } from 'lucide-react';
+import { Crown, Flame, Trash2, MapPin, ArrowRight, Heart, X, Share2, Copy, Send, Twitter, Store, ShoppingCart, SlidersHorizontal, Eye, ExternalLink, ChevronDown, AlertTriangle, Sparkles, Plus, Minus, Search } from 'lucide-react';
 
 // Official Standard WhatsApp SVG Icon
 function WhatsAppIcon({ className = "w-5 h-5" }) {
@@ -54,7 +54,8 @@ export default function App() {
   const [view, setView] = useState('store'); // 'store' | 'reels' | 'admin'
   const [activeCategory, setActiveCategory] = useState('All');
 
-  // Size & Price Filters
+  // Search & Filter States
+  const [searchQuery, setSearchQuery] = useState('');
   const [selectedSizeFilter, setSelectedSizeFilter] = useState('All');
   const [selectedPriceFilter, setSelectedPriceFilter] = useState('All');
 
@@ -229,10 +230,13 @@ export default function App() {
     if (!p) return false;
     
     if (activeCategory === 'Wishlist') {
-      return wishlist.some((w) => String(w.id) === String(p.id));
+      const isWishlisted = wishlist.some((w) => String(w.id) === String(p.id));
+      if (!isWishlisted) return false;
+    } else {
+      const matchesCategory = activeCategory === 'All' || p.category === activeCategory;
+      if (!matchesCategory) return false;
     }
 
-    const matchesCategory = activeCategory === 'All' || p.category === activeCategory;
     const matchesSize = selectedSizeFilter === 'All' || (p.sizes && p.sizes.includes(selectedSizeFilter));
     
     let matchesPrice = true;
@@ -241,7 +245,12 @@ export default function App() {
     else if (selectedPriceFilter === 'NGN 45,000 - 60,000') matchesPrice = priceVal >= 45000 && priceVal <= 60000;
     else if (selectedPriceFilter === 'Above NGN 60,000') matchesPrice = priceVal > 60000;
 
-    return matchesCategory && matchesSize && matchesPrice;
+    const matchesSearch = !searchQuery.trim() || 
+      (p.name && p.name.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      (p.category && p.category.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      (p.description && p.description.toLowerCase().includes(searchQuery.toLowerCase()));
+
+    return matchesSize && matchesPrice && matchesSearch;
   });
 
   const displayedProducts = filteredProducts.slice(0, visibleCount);
@@ -442,8 +451,8 @@ export default function App() {
       {view === 'store' && (
         <main className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 py-6 space-y-10 md:space-y-14 overflow-x-hidden">
           
-          {/* High-Fashion Hero Banner */}
-          <div className="relative h-[340px] sm:h-[380px] md:h-[440px] rounded-3xl overflow-hidden shadow-2xl border border-stone-200 flex flex-col justify-end p-6 sm:p-10 md:p-12">
+          {/* High-Fashion Hero Banner with Extended Height for Full Outfit Viewing */}
+          <div className="relative h-[420px] sm:h-[480px] md:h-[540px] rounded-3xl overflow-hidden shadow-2xl border border-stone-200 flex flex-col justify-end p-6 sm:p-10 md:p-12">
             {heroSlides.map((slide, idx) => (
               <div
                 key={slide.id}
@@ -455,7 +464,7 @@ export default function App() {
                   <video
                     src={slide.videoUrl}
                     poster={slide.posterUrl}
-                    className="w-full h-full object-cover brightness-95"
+                    className="w-full h-full object-cover object-top brightness-95"
                     autoPlay
                     loop
                     muted
@@ -466,7 +475,7 @@ export default function App() {
                     src={slide.imageUrl}
                     alt={slide.title}
                     loading="lazy"
-                    className="w-full h-full object-cover brightness-95"
+                    className="w-full h-full object-cover object-top brightness-95"
                   />
                 )}
               </div>
@@ -523,13 +532,13 @@ export default function App() {
             onNavigateToTikTokTab={() => navigateToView('reels')}
           />
 
-          {/* Catalog Grid with Size, Price, AND Prominent Wishlist Filter */}
+          {/* Catalog Grid with Instant Live Search Bar, Size, Price, AND Wishlist Filter */}
           <div className="space-y-6 pt-6 border-t border-stone-200">
             <div className="flex flex-col space-y-4">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div>
                   <h2 className="text-2xl md:text-3xl font-serif font-black text-stone-900">Boutique Collection</h2>
-                  <p className="text-xs text-stone-500">Filter outfits by Category, Size, Price, or your Saved Wishlist</p>
+                  <p className="text-xs text-stone-500">Filter or search outfits by Name, Style, Category, Size, or Price</p>
                 </div>
 
                 {/* Direct Wishlist Drawer Launcher Button in Catalog Header */}
@@ -540,6 +549,30 @@ export default function App() {
                   <Heart className={`w-4 h-4 ${wishlist.length > 0 ? 'fill-rose-500 text-rose-500 animate-pulse' : 'text-rose-500'}`} />
                   <span>Saved Wishlist ({wishlist.length})</span>
                 </button>
+              </div>
+
+              {/* Instant Live Product Search Bar */}
+              <div className="relative w-full">
+                <input
+                  type="text"
+                  placeholder="Search outfits by name, fabric, or style (e.g. Corset, Velvet, Ankara, Adire)..."
+                  value={searchQuery}
+                  onChange={(e) => {
+                    setSearchQuery(e.target.value);
+                    setVisibleCount(8);
+                  }}
+                  className="w-full pl-10 pr-10 py-3 bg-white border border-stone-200/90 rounded-2xl text-xs font-bold text-stone-900 outline-none focus:border-stone-900 shadow-sm transition"
+                />
+                <Search className="w-4 h-4 text-amber-600 absolute left-3.5 top-3.5" />
+                {searchQuery && (
+                  <button
+                    onClick={() => setSearchQuery('')}
+                    className="absolute right-3.5 top-3.5 text-stone-400 hover:text-stone-900 text-xs font-bold bg-stone-100 w-5 h-5 rounded-full flex items-center justify-center"
+                    title="Clear search query"
+                  >
+                    ✕
+                  </button>
+                )}
               </div>
 
               {/* Filter Bar with Integrated Saved Wishlist Filter Tab & Side-by-side Dropdowns on Mobile */}
@@ -622,19 +655,53 @@ export default function App() {
 
             {/* Spacious Luxury Product Grid — 1 Column on Mobile for Elegant Big Cards, 2 on SM, 4 on LG */}
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 sm:gap-6 md:gap-8">
-              {displayedProducts.length === 0 && activeCategory === 'Wishlist' ? (
+              {displayedProducts.length === 0 ? (
                 <div className="col-span-full py-16 text-center space-y-3 bg-white rounded-3xl border border-stone-200 p-8 shadow-sm">
-                  <Heart className="w-12 h-12 text-rose-400 mx-auto fill-rose-100 animate-pulse" />
-                  <h3 className="text-lg font-serif font-black text-stone-900">Your Saved Wishlist is Empty</h3>
-                  <p className="text-xs text-stone-500 max-w-sm mx-auto">
-                    Tap the heart icon on top of any dress card in the catalog to save your favorite Owambe & Couture fits!
-                  </p>
-                  <button
-                    onClick={() => setActiveCategory('All')}
-                    className="mt-2 bg-stone-900 text-amber-400 font-bold px-6 py-2.5 rounded-full text-xs uppercase tracking-wider"
-                  >
-                    Browse All Outfits
-                  </button>
+                  {activeCategory === 'Wishlist' ? (
+                    <>
+                      <Heart className="w-12 h-12 text-rose-400 mx-auto fill-rose-100 animate-pulse" />
+                      <h3 className="text-lg font-serif font-black text-stone-900">Your Saved Wishlist is Empty</h3>
+                      <p className="text-xs text-stone-500 max-w-sm mx-auto">
+                        Tap the heart icon on top of any dress card in the catalog to save your favorite Owambe & Couture fits!
+                      </p>
+                      <button
+                        onClick={() => setActiveCategory('All')}
+                        className="mt-2 bg-stone-900 text-amber-400 font-bold px-6 py-2.5 rounded-full text-xs uppercase tracking-wider"
+                      >
+                        Browse All Outfits
+                      </button>
+                    </>
+                  ) : searchQuery ? (
+                    <>
+                      <Search className="w-12 h-12 text-stone-300 mx-auto" />
+                      <h3 className="text-lg font-serif font-black text-stone-900">No Outfits Found for "{searchQuery}"</h3>
+                      <p className="text-xs text-stone-500 max-w-sm mx-auto">
+                        Try searching with a different keyword or clear your search query to view all boutique outfits.
+                      </p>
+                      <button
+                        onClick={() => setSearchQuery('')}
+                        className="mt-2 bg-amber-500 text-stone-950 font-bold px-6 py-2.5 rounded-full text-xs uppercase tracking-wider"
+                      >
+                        Clear Search Query
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <Store className="w-12 h-12 text-stone-300 mx-auto" />
+                      <h3 className="text-lg font-serif font-black text-stone-900">No Outfits Match Filter Criteria</h3>
+                      <button
+                        onClick={() => {
+                          setActiveCategory('All');
+                          setSelectedSizeFilter('All');
+                          setSelectedPriceFilter('All');
+                          setSearchQuery('');
+                        }}
+                        className="mt-2 bg-stone-900 text-amber-400 font-bold px-6 py-2.5 rounded-full text-xs uppercase tracking-wider"
+                      >
+                        Reset All Filters
+                      </button>
+                    </>
+                  )}
                 </div>
               ) : (
                 displayedProducts.map((product) => {
