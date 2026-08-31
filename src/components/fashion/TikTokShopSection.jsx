@@ -88,21 +88,8 @@ export function TikTokShopSection({ products = [], onAddToCart, onOpenSingleProd
                 {formatCurrencyPrice(reel.price)}
               </span>
 
+              {/* Dual Actions: Buy/View on Website AND Watch on TikTok App */}
               <div className="grid grid-cols-2 gap-2 mt-3">
-                <button
-                  disabled={reel.stock === 0}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onAddToCart(reel);
-                  }}
-                  className={`w-full font-black py-3 rounded-xl flex items-center justify-center gap-1.5 shadow-xl transition text-xs uppercase tracking-wider ${
-                    reel.stock === 0 ? 'bg-stone-800 text-stone-500 cursor-not-allowed shadow-none' : 'bg-white hover:bg-amber-400 text-stone-950 active:scale-95'
-                  }`}
-                >
-                  <ShoppingBag className="w-4 h-4 text-amber-600" />
-                  <span>{reel.stock === 0 ? 'Sold Out' : 'Buy Outfit'}</span>
-                </button>
-
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
@@ -110,11 +97,23 @@ export function TikTokShopSection({ products = [], onAddToCart, onOpenSingleProd
                       onOpenSingleProduct(reel);
                     }
                   }}
-                  className="w-full bg-stone-900/90 hover:bg-black text-amber-400 font-bold py-3 rounded-xl flex items-center justify-center gap-1.5 border border-amber-400/30 text-xs transition"
+                  className="w-full bg-white hover:bg-amber-400 text-stone-950 font-black py-3 rounded-xl flex items-center justify-center gap-1.5 shadow-xl transition text-xs uppercase tracking-wider active:scale-95"
                 >
-                  <Eye className="w-4 h-4 text-amber-400" />
-                  <span>View Details</span>
+                  <Eye className="w-4 h-4 text-amber-600" />
+                  <span>Buy Outfit</span>
                 </button>
+
+                <a
+                  href="https://tiktok.com"
+                  target="_blank"
+                  rel="noreferrer"
+                  onClick={(e) => e.stopPropagation()}
+                  className="w-full bg-stone-900/90 hover:bg-black text-rose-300 font-bold py-3 rounded-xl flex items-center justify-center gap-1.5 border border-rose-500/30 text-xs transition"
+                  title="Open Original Video on TikTok App"
+                >
+                  <TikTokIcon className="w-4 h-4 text-rose-400" />
+                  <span>TikTok App</span>
+                </a>
               </div>
             </div>
           </div>
