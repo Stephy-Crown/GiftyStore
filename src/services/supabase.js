@@ -31,6 +31,19 @@ export async function signInAdmin(email, password) {
   }
 }
 
+export async function updateAdminPassword(newPassword) {
+  if (!supabase) {
+    return { success: true, message: 'Local development password updated!' };
+  }
+  try {
+    const { data, error } = await supabase.auth.updateUser({ password: newPassword });
+    if (error) return { success: false, message: error.message };
+    return { success: true, message: 'Admin password updated securely in Supabase!' };
+  } catch (err) {
+    return { success: false, message: err.message };
+  }
+}
+
 export async function signOutAdmin() {
   if (!supabase) return;
   await supabase.auth.signOut();

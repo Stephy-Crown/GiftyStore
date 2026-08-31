@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Trash2, Edit3, ShieldCheck, Tag, Copy, Sparkles, RefreshCw, Key, Lock, Check, Upload, Image, AlertCircle, X, LogOut, Mail } from 'lucide-react';
 import siteConfig from '../data/config.json';
-import { updateProductInSupabase, deleteProductFromSupabase, addProductToSupabase, signInAdmin, signOutAdmin, getCurrentAdminSession } from '../services/supabase';
+import { updateProductInSupabase, deleteProductFromSupabase, addProductToSupabase, signInAdmin, signOutAdmin, getCurrentAdminSession, updateAdminPassword } from '../services/supabase';
 
 export function AdminDashboard({ products, setProducts }) {
   const [activeTab, setActiveTab] = useState('products'); // 'products' | 'negotiate' | 'security'
@@ -15,11 +15,11 @@ export function AdminDashboard({ products, setProducts }) {
   const [lockoutTimer, setLockoutTimer] = useState(0);
   const [loginError, setLoginError] = useState('');
 
-  // Security Passcode State
-  const [storedPin, setStoredPin] = useState(siteConfig.defaultPin || '1234');
-  const [newPinInput, setNewPinInput] = useState('');
-  const [pinChangeSuccess, setPinChangeSuccess] = useState(false);
-  const [pinError, setPinError] = useState('');
+  // Security Password Change
+  const [newPasswordInput, setNewPasswordInput] = useState('');
+  const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
+  const [passwordChangeSuccess, setPasswordChangeSuccess] = useState('');
+  const [passwordChangeError, setPasswordChangeError] = useState('');
 
   // Form Banner Message
   const [formError, setFormError] = useState('');
@@ -102,16 +102,26 @@ export function AdminDashboard({ products, setProducts }) {
     setIsUnlocked(false);
   };
 
-  const handlePinChange = (e) => {
+  const handlePasswordChange = async (e) => {
     e.preventDefault();
-    if (newPinInput.length >= 4) {
-      setStoredPin(newPinInput);
-      setPinChangeSuccess(true);
-      setPinError('');
-      setNewPinInput('');
-      setTimeout(() => setPinChangeSuccess(false), 3000);
+    if (newPasswordInput.length < 6) {
+      setPasswordChangeError('Please enter a secure password of at least 6 characters.');
+      return;
+    }
+
+    setIsUpdatingPassword(true);
+    setPasswordChangeError('');
+    setPasswordChangeSuccess('');
+
+    const res = await updateAdminPassword(newPasswordInput);
+    setIsUpdatingPassword(false);
+
+    if (res.success) {
+      setPasswordChangeSuccess(res.message);
+      setNewPasswordInput('');
+      setTimeout(() => setPasswordChangeSuccess(''), 4000);
     } else {
-      setPinError('Please enter a passcode of at least 4 digits.');
+      setPasswordChangeError(res.message);
     }
   };
 
@@ -286,10 +296,10 @@ export function AdminDashboard({ products, setProducts }) {
         </div>
 
         <div className="flex items-center gap-2">
-          <div className="flex bg-stone-100 p-1 rounded-2xl border border-stone-200">
+          <div className="flex bg-stone-100 p-1 rounded-2xl border border-stone-200 overflow-x-auto">
             <button
               onClick={() => setActiveTab('products')}
-              className={`px-4 py-2 rounded-xl text-xs font-bold transition ${
+              className={`px-3 py-2 sm:px-4 sm:py-2 rounded-xl text-xs font-bold transition whitespace-nowrap ${
                 activeTab === 'products' ? 'bg-stone-900 text-amber-400 shadow' : 'text-stone-600 hover:text-stone-900'
               }`}
             >
@@ -297,17 +307,25 @@ export function AdminDashboard({ products, setProducts }) {
             </button>
             <button
               onClick={() => setActiveTab('negotiate')}
-              className={`px-4 py-2 rounded-xl text-xs font-bold transition ${
+              className={`px-3 py-2 sm:px-4 sm:py-2 rounded-xl text-xs font-bold transition whitespace-nowrap ${
                 activeTab === 'negotiate' ? 'bg-stone-900 text-amber-400 shadow' : 'text-stone-600 hover:text-stone-900'
               }`}
             >
               Negotiated Links
             </button>
+            <button
+              onClick={() => setActiveTab('security')}
+              className={`px-3 py-2 sm:px-4 sm:py-2 rounded-xl text-xs font-bold transition whitespace-nowrap ${
+                activeTab === 'security' ? 'bg-stone-900 text-amber-400 shadow' : 'text-stone-600 hover:text-stone-900'
+              }`}
+            >
+              Security Settings
+            </button>
           </div>
 
           <button
             onClick={handleSignOut}
-            className="p-2.5 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-2xl text-xs font-bold transition flex items-center gap-1.5"
+            className="p-2.5 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-2xl text-xs font-bold transition flex items-center gap-1.5 shrink-0"
             title="Sign Out Admin"
           >
             <LogOut className="w-4 h-4" />
@@ -543,6 +561,59 @@ export function AdminDashboard({ products, setProducts }) {
               </button>
             </div>
           )}
+        </div>
+      )}
+
+      {/* Security & Password Update Tab */}
+      {activeTab === 'security' && (
+        <div className="max-w-xl mx-auto space-y-6 bg-stone-50 p-6 sm:p-8 rounded-3xl border border-stone-200">
+          <div>
+            <h3 className="text-xl font-serif font-black text-stone-900 flex items-center gap-2">
+              <Key className="w-5 h-5 text-amber-600" /> Update Store Owner Password
+            </h3>
+            <p className="text-xs text-stone-500 mt-1">
+              Update your private admin login password securely in Supabase Auth.
+            </p>
+          </div>
+
+          {passwordChangeError && (
+            <div className="bg-rose-50 text-rose-700 p-3 rounded-xl text-xs font-bold border border-rose-200 flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+              <span>{passwordChangeError}</span>
+            </div>
+          )}
+
+          {passwordChangeSuccess && (
+            <div className="bg-emerald-50 text-emerald-800 p-3 rounded-xl text-xs font-bold border border-emerald-200 flex items-center gap-2">
+              <Check className="w-4 h-4 text-emerald-600 shrink-0" />
+              <span>{passwordChangeSuccess}</span>
+            </div>
+          )}
+
+          <form onSubmit={handlePasswordChange} className="space-y-4 text-xs">
+            <div className="space-y-1">
+              <label className="font-bold text-stone-700">New Password (Minimum 6 characters)</label>
+              <div className="relative">
+                <input
+                  type="password"
+                  placeholder="Enter new strong password"
+                  value={newPasswordInput}
+                  onChange={(e) => setNewPasswordInput(e.target.value)}
+                  className="w-full pl-9 pr-4 py-3 bg-white border border-stone-200 rounded-xl font-bold text-stone-900 outline-none"
+                />
+                <Lock className="w-4 h-4 text-stone-400 absolute left-3 top-3.5" />
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              disabled={isUpdatingPassword}
+              className="w-full bg-stone-900 hover:bg-black text-amber-400 font-extrabold py-3.5 rounded-xl text-xs uppercase tracking-wider shadow-lg transition flex items-center justify-center gap-2"
+            >
+              <ShieldCheck className="w-4 h-4 text-amber-400" />
+              <span>{isUpdatingPassword ? 'Updating Password...' : 'Save New Admin Password'}</span>
+            </button>
+          </form>
         </div>
       )}
 
