@@ -109,7 +109,7 @@ export default function App() {
       tag: "VIRAL TIKTOK FASHION",
       title: "Trending Owambe & Two-Piece Fits",
       type: "image",
-      imageUrl: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=1920&auto=format&fit=crop&q=85",
+      imageUrl: "https://images.unsplash.com/photo-1589156280159-27698a70f29e?w=1920&auto=format&fit=crop&q=85",
       cta: "Watch TikTok Reels"
     }
   ];
@@ -395,7 +395,7 @@ export default function App() {
         </div>
       )}
 
-      {/* Ultra-Clean Header Navbar: Logo Left, Centered Desktop Search Bar, Nav Right */}
+      {/* Ultra-Clean Header Navbar: Logo Left, Extended Centered Desktop Search Bar, Nav Right */}
       <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-stone-200/80 shadow-sm">
         <div className="max-w-7xl mx-auto px-3.5 sm:px-6 md:px-8 py-2.5 sm:py-3 flex items-center justify-between">
           
@@ -404,8 +404,8 @@ export default function App() {
             <BrandLogoCrest />
           </div>
 
-          {/* Centered Desktop Search Input Bar (Hidden on Mobile for 0 Congestion) */}
-          <div className="hidden md:flex flex-1 max-w-sm mx-6 relative">
+          {/* Extended Centered Desktop Search Input Bar (Hidden on Mobile for 0 Congestion) */}
+          <div className="hidden md:flex flex-1 max-w-xl mx-6 relative">
             <input
               type="text"
               placeholder="Search outfits by name, style, fabric..."
@@ -477,8 +477,8 @@ export default function App() {
       {view === 'store' && (
         <main className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 py-6 space-y-10 md:space-y-14 overflow-x-hidden">
           
-          {/* High-Fashion Hero Banner — Desktop Centered Outfit Focus (Clothes Shown, Not Model Face) */}
-          <div className="relative h-[420px] sm:h-[480px] md:h-[540px] rounded-3xl overflow-hidden shadow-2xl border border-stone-200 flex flex-col justify-end p-6 sm:p-10 md:p-12">
+          {/* High-Fashion Hero Banner — Desktop Centered Outfit Focus & Mobile Upward Lifted Overlay */}
+          <div className="relative h-[420px] sm:h-[480px] md:h-[540px] rounded-3xl overflow-hidden shadow-2xl border border-stone-200 flex flex-col justify-end p-6 pb-12 sm:pb-14 md:pb-12 sm:p-10 md:p-12">
             {heroSlides.map((slide, idx) => (
               <div
                 key={slide.id}
@@ -519,7 +519,8 @@ export default function App() {
               <span className="hidden sm:inline">Share This Look</span>
             </button>
 
-            <div className="relative max-w-xl space-y-3 z-10 text-white">
+            {/* Content & Explore Button Shifted Upward Away from Navigation Dots */}
+            <div className="relative max-w-xl space-y-3 z-10 text-white mb-2 sm:mb-1">
               <span className="text-[10px] font-black uppercase tracking-widest text-amber-400 bg-stone-950/80 px-3 py-1 rounded-full border border-amber-400/30">
                 {heroSlides[currentSlide].tag}
               </span>
