@@ -9,6 +9,39 @@ export const supabase =
     ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
     : null;
 
+// Supabase Email & Password Authentication for Admin Dashboard
+export async function signInAdmin(email, password) {
+  if (!supabase) {
+    // Development local bypass fallback
+    if (password === '1234' || password === 'gifty2026') {
+      return { user: { email: email || 'admin@giftystore.com' }, session: { access_token: 'local_dev_token' }, error: null };
+    }
+    return { user: null, session: null, error: { message: 'Invalid Admin Credentials (Default: gifty2026)' } };
+  }
+
+  try {
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+    if (error) return { user: null, session: null, error };
+    return { user: data.user, session: data.session, error: null };
+  } catch (err) {
+    return { user: null, session: null, error: err };
+  }
+}
+
+export async function signOutAdmin() {
+  if (!supabase) return;
+  await supabase.auth.signOut();
+}
+
+export async function getCurrentAdminSession() {
+  if (!supabase) return null;
+  const { data } = await supabase.auth.getSession();
+  return data?.session || null;
+}
+
 // Fetch all fashion clothes from Supabase (or fallback to products.json)
 export async function getFashionProducts() {
   if (!supabase) {
