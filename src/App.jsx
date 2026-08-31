@@ -475,10 +475,9 @@ export default function App() {
 
       {/* Main Storefront View */}
       {view === 'store' && (
-        <main className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 py-6 space-y-10 md:space-y-14 overflow-x-hidden">
-          
-          {/* High-Fashion Hero Banner — Desktop Centered Outfit Focus & Mobile Upward Lifted Overlay */}
-          <div className="relative h-[420px] sm:h-[480px] md:h-[540px] rounded-3xl overflow-hidden shadow-2xl border border-stone-200 flex flex-col justify-end p-6 pb-12 sm:pb-14 md:pb-12 sm:p-10 md:p-12">
+        <div className="w-full">
+          {/* Full-Bleed Edge-to-Edge High-Fashion Hero Banner */}
+          <div className="relative w-full h-[440px] sm:h-[500px] md:h-[560px] overflow-hidden shadow-2xl border-b border-stone-200/80 flex flex-col justify-end">
             {heroSlides.map((slide, idx) => (
               <div
                 key={slide.id}
@@ -512,29 +511,31 @@ export default function App() {
             {/* Icon-Only Share Button on Mobile, Full Label on Desktop */}
             <button
               onClick={(e) => handleShareClick(e, null)}
-              className="absolute top-4 right-4 z-20 bg-white/90 backdrop-blur-md hover:bg-white text-stone-950 p-2.5 sm:px-3.5 sm:py-2 rounded-full font-bold text-xs flex items-center gap-1.5 shadow-xl transition"
+              className="absolute top-4 right-4 sm:right-8 z-20 bg-white/90 backdrop-blur-md hover:bg-white text-stone-950 p-2.5 sm:px-3.5 sm:py-2 rounded-full font-bold text-xs flex items-center gap-1.5 shadow-xl transition"
               title="Share This Look"
             >
               <Share2 className="w-4 h-4 text-amber-600" />
               <span className="hidden sm:inline">Share This Look</span>
             </button>
 
-            {/* Content & Explore Button Shifted Upward Away from Navigation Dots */}
-            <div className="relative max-w-xl space-y-3 z-10 text-white mb-2 sm:mb-1">
-              <span className="text-[10px] font-black uppercase tracking-widest text-amber-400 bg-stone-950/80 px-3 py-1 rounded-full border border-amber-400/30">
-                {heroSlides[currentSlide].tag}
-              </span>
-              <h1 className="text-2xl sm:text-4xl md:text-5xl font-serif font-black leading-tight text-white drop-shadow-md">
-                {heroSlides[currentSlide].title}
-              </h1>
-              
-              <div className="pt-1">
-                <button
-                  onClick={() => navigateToView('reels')}
-                  className="bg-amber-500 hover:bg-amber-400 text-stone-950 font-black px-6 py-3 rounded-full text-xs sm:text-sm inline-flex items-center gap-2 shadow-2xl hover:scale-105 transition uppercase tracking-wider"
-                >
-                  {heroSlides[currentSlide].cta} <ArrowRight className="w-4 h-4 text-stone-950" />
-                </button>
+            {/* Content Container aligned with site grid */}
+            <div className="max-w-7xl mx-auto w-full px-6 pb-12 sm:pb-14 md:pb-12 sm:px-10 md:px-12 relative z-10">
+              <div className="max-w-xl space-y-3 text-white mb-2 sm:mb-1">
+                <span className="text-[10px] font-black uppercase tracking-widest text-amber-400 bg-stone-950/80 px-3 py-1 rounded-full border border-amber-400/30">
+                  {heroSlides[currentSlide].tag}
+                </span>
+                <h1 className="text-2xl sm:text-4xl md:text-5xl font-serif font-black leading-tight text-white drop-shadow-md">
+                  {heroSlides[currentSlide].title}
+                </h1>
+                
+                <div className="pt-1">
+                  <button
+                    onClick={() => navigateToView('reels')}
+                    className="bg-amber-500 hover:bg-amber-400 text-stone-950 font-black px-6 py-3 rounded-full text-xs sm:text-sm inline-flex items-center gap-2 shadow-2xl hover:scale-105 transition uppercase tracking-wider"
+                  >
+                    {heroSlides[currentSlide].cta} <ArrowRight className="w-4 h-4 text-stone-950" />
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -551,304 +552,306 @@ export default function App() {
             </div>
           </div>
 
-          {/* TikTok Shop Section */}
-          <TikTokShopSection
-            products={safeProducts}
-            onAddToCart={addToCart}
-            onOpenSingleProduct={openSingleProduct}
-            onNavigateToTikTokTab={() => navigateToView('reels')}
-          />
+          <main className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 py-8 space-y-10 md:space-y-14 overflow-x-hidden">
+            {/* TikTok Shop Section */}
+            <TikTokShopSection
+              products={safeProducts}
+              onAddToCart={addToCart}
+              onOpenSingleProduct={openSingleProduct}
+              onNavigateToTikTokTab={() => navigateToView('reels')}
+            />
 
-          {/* Catalog Grid with Instant Live Search Bar, Size, Price, AND Wishlist Filter */}
-          <div className="space-y-6 pt-6 border-t border-stone-200">
-            <div className="flex flex-col space-y-4">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                <div>
-                  <h2 className="text-2xl md:text-3xl font-serif font-black text-stone-900">Boutique Collection</h2>
-                  <p className="text-xs text-stone-500">Filter or search outfits by Name, Style, Category, Size, or Price</p>
+            {/* Catalog Grid with Instant Live Search Bar, Size, Price, AND Wishlist Filter */}
+            <div className="space-y-6 pt-6 border-t border-stone-200">
+              <div className="flex flex-col space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div>
+                    <h2 className="text-2xl md:text-3xl font-serif font-black text-stone-900">Boutique Collection</h2>
+                    <p className="text-xs text-stone-500">Filter or search outfits by Name, Style, Category, Size, or Price</p>
+                  </div>
+
+                  {/* Direct Wishlist Drawer Launcher Button in Catalog Header */}
+                  <button
+                    onClick={() => setIsWishlistOpen(true)}
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200/80 text-xs font-black transition self-start sm:self-auto shadow-sm"
+                  >
+                    <Heart className={`w-4 h-4 ${wishlist.length > 0 ? 'fill-rose-500 text-rose-500 animate-pulse' : 'text-rose-500'}`} />
+                    <span>Saved Wishlist ({wishlist.length})</span>
+                  </button>
                 </div>
 
-                {/* Direct Wishlist Drawer Launcher Button in Catalog Header */}
-                <button
-                  onClick={() => setIsWishlistOpen(true)}
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200/80 text-xs font-black transition self-start sm:self-auto shadow-sm"
-                >
-                  <Heart className={`w-4 h-4 ${wishlist.length > 0 ? 'fill-rose-500 text-rose-500 animate-pulse' : 'text-rose-500'}`} />
-                  <span>Saved Wishlist ({wishlist.length})</span>
-                </button>
+                {/* Instant Live Product Search Bar - 100% Responsive on Mobile & Desktop */}
+                <div className="relative w-full">
+                  <input
+                    ref={searchInputRef}
+                    type="text"
+                    placeholder="Search outfits by name, fabric, or style..."
+                    value={searchQuery}
+                    onChange={(e) => {
+                      setSearchQuery(e.target.value);
+                      setVisibleCount(8);
+                    }}
+                    className="w-full pl-9 pr-8 py-2.5 bg-white border border-stone-200/90 rounded-2xl text-xs font-bold text-stone-900 outline-none focus:border-stone-900 shadow-sm transition placeholder:text-stone-400"
+                  />
+                  <Search className="w-4 h-4 text-amber-600 absolute left-3 top-3 pointer-events-none" />
+                  {searchQuery && (
+                    <button
+                      onClick={() => setSearchQuery('')}
+                      className="absolute right-2.5 top-2.5 text-stone-400 hover:text-stone-900 text-xs font-bold bg-stone-100 w-5 h-5 rounded-full flex items-center justify-center"
+                      title="Clear search query"
+                    >
+                      ✕
+                    </button>
+                  )}
+                </div>
+
+                {/* Filter Bar with Integrated Saved Wishlist Filter Tab & Side-by-side Dropdowns on Mobile */}
+                <div className="bg-white p-3.5 sm:p-4 rounded-2xl border border-stone-200 shadow-sm flex flex-col md:flex-row md:items-center gap-3 md:gap-4">
+                  <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 md:pb-0">
+                    <div className="flex items-center gap-1 font-bold text-xs text-stone-700 mr-1 shrink-0">
+                      <SlidersHorizontal className="w-3.5 h-3.5 text-amber-600" /> Filter:
+                    </div>
+
+                    {categories.map((cat) => (
+                      <button
+                        key={cat}
+                        onClick={() => {
+                          setActiveCategory(cat);
+                          setVisibleCount(8);
+                        }}
+                        className={`px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition ${
+                          activeCategory === cat
+                            ? 'bg-amber-500 text-stone-950 font-black shadow-sm'
+                            : 'bg-stone-100 text-stone-700 hover:bg-stone-200'
+                        }`}
+                      >
+                        {cat}
+                      </button>
+                    ))}
+
+                    {/* Prominent Wishlist Category Filter Pill */}
+                    <button
+                      onClick={() => {
+                        setActiveCategory('Wishlist');
+                        setVisibleCount(8);
+                      }}
+                      className={`px-3 py-1.5 rounded-full text-xs font-extrabold whitespace-nowrap transition flex items-center gap-1.5 ${
+                        activeCategory === 'Wishlist'
+                          ? 'bg-rose-600 text-white font-black shadow-md'
+                          : 'bg-rose-50 text-rose-700 hover:bg-rose-100 border border-rose-200/60'
+                      }`}
+                    >
+                      <Heart className={`w-3.5 h-3.5 ${activeCategory === 'Wishlist' ? 'fill-white' : 'fill-rose-500 text-rose-500'}`} />
+                      <span>Saved Outfits ({wishlist.length})</span>
+                    </button>
+                  </div>
+
+                  {/* Side-by-Side Size and Price Filters on Mobile */}
+                  <div className="w-full md:w-auto grid grid-cols-2 md:flex md:items-center gap-2 pt-2 md:pt-0 border-t md:border-t-0 border-stone-100">
+                    <div className="flex items-center gap-1.5 bg-stone-50 md:bg-transparent p-1.5 md:p-0 rounded-xl border md:border-0 border-stone-200/80">
+                      <span className="text-[11px] font-bold text-stone-500 shrink-0">Size:</span>
+                      <select
+                        value={selectedSizeFilter}
+                        onChange={(e) => {
+                          setSelectedSizeFilter(e.target.value);
+                          setVisibleCount(8);
+                        }}
+                        className="bg-white md:bg-stone-100 border border-stone-200 text-xs font-bold rounded-xl px-2 py-1 text-stone-800 outline-none w-full"
+                      >
+                        {sizesOptions.map((s) => (
+                          <option key={s} value={s}>{s}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="flex items-center gap-1.5 bg-stone-50 md:bg-transparent p-1.5 md:p-0 rounded-xl border md:border-0 border-stone-200/80">
+                      <span className="text-[11px] font-bold text-stone-500 shrink-0">Price:</span>
+                      <select
+                        value={selectedPriceFilter}
+                        onChange={(e) => {
+                          setSelectedPriceFilter(e.target.value);
+                          setVisibleCount(8);
+                        }}
+                        className="bg-white md:bg-stone-100 border border-stone-200 text-xs font-bold rounded-xl px-2 py-1 text-stone-800 outline-none w-full"
+                      >
+                        {priceOptions.map((pr) => (
+                          <option key={pr} value={pr}>{pr}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                </div>
               </div>
 
-              {/* Instant Live Product Search Bar - 100% Responsive on Mobile & Desktop */}
-              <div className="relative w-full">
-                <input
-                  ref={searchInputRef}
-                  type="text"
-                  placeholder="Search outfits by name, fabric, or style..."
-                  value={searchQuery}
-                  onChange={(e) => {
-                    setSearchQuery(e.target.value);
-                    setVisibleCount(8);
-                  }}
-                  className="w-full pl-9 pr-8 py-2.5 bg-white border border-stone-200/90 rounded-2xl text-xs font-bold text-stone-900 outline-none focus:border-stone-900 shadow-sm transition placeholder:text-stone-400"
-                />
-                <Search className="w-4 h-4 text-amber-600 absolute left-3 top-3 pointer-events-none" />
-                {searchQuery && (
-                  <button
-                    onClick={() => setSearchQuery('')}
-                    className="absolute right-2.5 top-2.5 text-stone-400 hover:text-stone-900 text-xs font-bold bg-stone-100 w-5 h-5 rounded-full flex items-center justify-center"
-                    title="Clear search query"
-                  >
-                    ✕
-                  </button>
+              {/* Spacious Luxury Product Grid — 1 Column on Mobile for Elegant Big Cards, 2 on SM, 4 on LG */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 sm:gap-6 md:gap-8">
+                {displayedProducts.length === 0 ? (
+                  <div className="col-span-full py-16 text-center space-y-3 bg-white rounded-3xl border border-stone-200 p-8 shadow-sm">
+                    {activeCategory === 'Wishlist' ? (
+                      <>
+                        <Heart className="w-12 h-12 text-rose-400 mx-auto fill-rose-100 animate-pulse" />
+                        <h3 className="text-lg font-serif font-black text-stone-900">Your Saved Wishlist is Empty</h3>
+                        <p className="text-xs text-stone-500 max-w-sm mx-auto">
+                          Tap the heart icon on top of any dress card in the catalog to save your favorite Owambe & Couture fits!
+                        </p>
+                        <button
+                          onClick={() => setActiveCategory('All')}
+                          className="mt-2 bg-stone-900 text-amber-400 font-bold px-6 py-2.5 rounded-full text-xs uppercase tracking-wider"
+                        >
+                          Browse All Outfits
+                        </button>
+                      </>
+                    ) : searchQuery ? (
+                      <>
+                        <Search className="w-12 h-12 text-stone-300 mx-auto" />
+                        <h3 className="text-lg font-serif font-black text-stone-900">No Outfits Found for "{searchQuery}"</h3>
+                        <p className="text-xs text-stone-500 max-w-sm mx-auto">
+                          Try searching with a different keyword or clear your search query to view all boutique outfits.
+                        </p>
+                        <button
+                          onClick={() => setSearchQuery('')}
+                          className="mt-2 bg-amber-500 text-stone-950 font-bold px-6 py-2.5 rounded-full text-xs uppercase tracking-wider"
+                        >
+                          Clear Search Query
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <Store className="w-12 h-12 text-stone-300 mx-auto" />
+                        <h3 className="text-lg font-serif font-black text-stone-900">No Outfits Match Filter Criteria</h3>
+                        <button
+                          onClick={() => {
+                            setActiveCategory('All');
+                            setSelectedSizeFilter('All');
+                            setSelectedPriceFilter('All');
+                            setSearchQuery('');
+                          }}
+                          className="mt-2 bg-stone-900 text-amber-400 font-bold px-6 py-2.5 rounded-full text-xs uppercase tracking-wider"
+                        >
+                          Reset All Filters
+                        </button>
+                      </>
+                    )}
+                  </div>
+                ) : (
+                  displayedProducts.map((product) => {
+                    const isWishlisted = wishlist.some((w) => String(w.id) === String(product.id));
+                    const isSoldOut = product.stock === 0;
+                    const isLowStock = product.stock > 0 && product.stock <= 3;
+
+                    return (
+                      <div
+                        key={product.id || product.name}
+                        onClick={() => openSingleProduct(product)}
+                        className="bg-white rounded-3xl overflow-hidden border border-stone-200/80 shadow-sm hover:shadow-xl transition duration-300 flex flex-col group relative cursor-pointer"
+                      >
+                        <div className="absolute top-3 right-3 z-30 flex items-center gap-1.5">
+                          <button
+                            type="button"
+                            onClick={(e) => handleShareClick(e, product)}
+                            className="p-2.5 bg-white/90 backdrop-blur-md rounded-full shadow-md hover:scale-110 active:scale-95 transition text-stone-700 hover:text-amber-600"
+                            title="Share Outfit"
+                          >
+                            <Share2 className="w-4 h-4" />
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              toggleWishlist(product);
+                            }}
+                            className="p-2.5 bg-white/90 backdrop-blur-md rounded-full shadow-md hover:scale-110 active:scale-95 transition"
+                            title="Save to Wishlist"
+                          >
+                            <Heart className={`w-4 h-4 ${isWishlisted ? 'fill-rose-500 text-rose-500' : 'text-stone-700'}`} />
+                          </button>
+                        </div>
+
+                        <div className="relative h-80 sm:h-72 md:h-80 w-full bg-stone-100 overflow-hidden">
+                          <img
+                            src={product.image}
+                            alt={product.name}
+                            loading="lazy"
+                            className={`w-full h-full object-cover group-hover:scale-105 transition duration-500 ${isSoldOut ? 'grayscale brightness-75' : ''}`}
+                          />
+
+                          {/* Stock Badges */}
+                          {isSoldOut ? (
+                            <span className="absolute top-3 left-3 bg-stone-950 text-white text-[11px] font-black px-3.5 py-1 rounded-full uppercase tracking-wider shadow">
+                              SOLD OUT
+                            </span>
+                          ) : isLowStock ? (
+                            <span className="absolute top-3 left-3 bg-amber-500 text-stone-950 text-[11px] font-black px-3 py-1 rounded-full uppercase tracking-wider shadow flex items-center gap-1">
+                              <AlertTriangle className="w-3.5 h-3.5 text-stone-950" /> ONLY {product.stock} LEFT
+                            </span>
+                          ) : product.is_tiktok_featured ? (
+                            <span className="absolute top-3 left-3 bg-stone-900/90 text-amber-400 text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-wider shadow">
+                              TIKTOK REEL
+                            </span>
+                          ) : null}
+                        </div>
+
+                        <div className="p-5 flex-1 flex flex-col justify-between space-y-4">
+                          <div>
+                            <span className="text-[10px] font-bold text-amber-700 uppercase tracking-wider block mb-1">{product.category}</span>
+                            <h3 className="text-base sm:text-lg font-bold text-stone-900 truncate">{product.name}</h3>
+                            <p className="text-lg sm:text-xl font-black text-amber-600 mt-1">
+                              {formatCurrencyPrice(product.price)}
+                            </p>
+                          </div>
+
+                          {/* Uncongested Luxury Action Buttons */}
+                          <div className="grid grid-cols-2 gap-2.5 pt-1">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                openSingleProduct(product);
+                              }}
+                              className="bg-stone-100 hover:bg-stone-200 text-stone-900 font-extrabold py-3 rounded-2xl text-xs flex items-center justify-center gap-1.5 transition"
+                            >
+                              <Eye className="w-4 h-4 text-amber-600" /> View Fit
+                            </button>
+                            
+                            <button
+                              disabled={isSoldOut}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                addToCart(product);
+                              }}
+                              className={`font-extrabold py-3 rounded-2xl text-xs flex items-center justify-center gap-1.5 transition shadow-md ${
+                                isSoldOut
+                                  ? 'bg-stone-200 text-stone-400 cursor-not-allowed shadow-none'
+                                  : 'bg-stone-900 hover:bg-black text-amber-400'
+                              }`}
+                            >
+                              <ShoppingCart className="w-4 h-4 text-amber-400" /> {isSoldOut ? 'Sold Out' : '+ Add Cart'}
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })
                 )}
               </div>
 
-              {/* Filter Bar with Integrated Saved Wishlist Filter Tab & Side-by-side Dropdowns on Mobile */}
-              <div className="bg-white p-3.5 sm:p-4 rounded-2xl border border-stone-200 shadow-sm flex flex-col md:flex-row md:items-center gap-3 md:gap-4">
-                <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 md:pb-0">
-                  <div className="flex items-center gap-1 font-bold text-xs text-stone-700 mr-1 shrink-0">
-                    <SlidersHorizontal className="w-3.5 h-3.5 text-amber-600" /> Filter:
-                  </div>
-
-                  {categories.map((cat) => (
-                    <button
-                      key={cat}
-                      onClick={() => {
-                        setActiveCategory(cat);
-                        setVisibleCount(8);
-                      }}
-                      className={`px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition ${
-                        activeCategory === cat
-                          ? 'bg-amber-500 text-stone-950 font-black shadow-sm'
-                          : 'bg-stone-100 text-stone-700 hover:bg-stone-200'
-                      }`}
-                    >
-                      {cat}
-                    </button>
-                  ))}
-
-                  {/* Prominent Wishlist Category Filter Pill */}
+              {/* Load More Outfits Pagination Button */}
+              {visibleCount < filteredProducts.length && (
+                <div className="text-center pt-8">
                   <button
-                    onClick={() => {
-                      setActiveCategory('Wishlist');
-                      setVisibleCount(8);
-                    }}
-                    className={`px-3 py-1.5 rounded-full text-xs font-extrabold whitespace-nowrap transition flex items-center gap-1.5 ${
-                      activeCategory === 'Wishlist'
-                        ? 'bg-rose-600 text-white font-black shadow-md'
-                        : 'bg-rose-50 text-rose-700 hover:bg-rose-100 border border-rose-200/60'
-                    }`}
+                    onClick={() => setVisibleCount((prev) => prev + 8)}
+                    className="bg-stone-900 hover:bg-black text-amber-400 font-black px-8 py-3.5 rounded-2xl text-xs uppercase tracking-wider shadow-xl inline-flex items-center gap-2 transition hover:scale-105 active:scale-95"
                   >
-                    <Heart className={`w-3.5 h-3.5 ${activeCategory === 'Wishlist' ? 'fill-white' : 'fill-rose-500 text-rose-500'}`} />
-                    <span>Saved Outfits ({wishlist.length})</span>
+                    <ChevronDown className="w-4 h-4 text-amber-400" />
+                    <span>Load More Outfits (Showing {displayedProducts.length} of {filteredProducts.length})</span>
                   </button>
                 </div>
-
-                {/* Side-by-Side Size and Price Filters on Mobile */}
-                <div className="w-full md:w-auto grid grid-cols-2 md:flex md:items-center gap-2 pt-2 md:pt-0 border-t md:border-t-0 border-stone-100">
-                  <div className="flex items-center gap-1.5 bg-stone-50 md:bg-transparent p-1.5 md:p-0 rounded-xl border md:border-0 border-stone-200/80">
-                    <span className="text-[11px] font-bold text-stone-500 shrink-0">Size:</span>
-                    <select
-                      value={selectedSizeFilter}
-                      onChange={(e) => {
-                        setSelectedSizeFilter(e.target.value);
-                        setVisibleCount(8);
-                      }}
-                      className="bg-white md:bg-stone-100 border border-stone-200 text-xs font-bold rounded-xl px-2 py-1 text-stone-800 outline-none w-full"
-                    >
-                      {sizesOptions.map((s) => (
-                        <option key={s} value={s}>{s}</option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div className="flex items-center gap-1.5 bg-stone-50 md:bg-transparent p-1.5 md:p-0 rounded-xl border md:border-0 border-stone-200/80">
-                    <span className="text-[11px] font-bold text-stone-500 shrink-0">Price:</span>
-                    <select
-                      value={selectedPriceFilter}
-                      onChange={(e) => {
-                        setSelectedPriceFilter(e.target.value);
-                        setVisibleCount(8);
-                      }}
-                      className="bg-white md:bg-stone-100 border border-stone-200 text-xs font-bold rounded-xl px-2 py-1 text-stone-800 outline-none w-full"
-                    >
-                      {priceOptions.map((pr) => (
-                        <option key={pr} value={pr}>{pr}</option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Spacious Luxury Product Grid — 1 Column on Mobile for Elegant Big Cards, 2 on SM, 4 on LG */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 sm:gap-6 md:gap-8">
-              {displayedProducts.length === 0 ? (
-                <div className="col-span-full py-16 text-center space-y-3 bg-white rounded-3xl border border-stone-200 p-8 shadow-sm">
-                  {activeCategory === 'Wishlist' ? (
-                    <>
-                      <Heart className="w-12 h-12 text-rose-400 mx-auto fill-rose-100 animate-pulse" />
-                      <h3 className="text-lg font-serif font-black text-stone-900">Your Saved Wishlist is Empty</h3>
-                      <p className="text-xs text-stone-500 max-w-sm mx-auto">
-                        Tap the heart icon on top of any dress card in the catalog to save your favorite Owambe & Couture fits!
-                      </p>
-                      <button
-                        onClick={() => setActiveCategory('All')}
-                        className="mt-2 bg-stone-900 text-amber-400 font-bold px-6 py-2.5 rounded-full text-xs uppercase tracking-wider"
-                      >
-                        Browse All Outfits
-                      </button>
-                    </>
-                  ) : searchQuery ? (
-                    <>
-                      <Search className="w-12 h-12 text-stone-300 mx-auto" />
-                      <h3 className="text-lg font-serif font-black text-stone-900">No Outfits Found for "{searchQuery}"</h3>
-                      <p className="text-xs text-stone-500 max-w-sm mx-auto">
-                        Try searching with a different keyword or clear your search query to view all boutique outfits.
-                      </p>
-                      <button
-                        onClick={() => setSearchQuery('')}
-                        className="mt-2 bg-amber-500 text-stone-950 font-bold px-6 py-2.5 rounded-full text-xs uppercase tracking-wider"
-                      >
-                        Clear Search Query
-                      </button>
-                    </>
-                  ) : (
-                    <>
-                      <Store className="w-12 h-12 text-stone-300 mx-auto" />
-                      <h3 className="text-lg font-serif font-black text-stone-900">No Outfits Match Filter Criteria</h3>
-                      <button
-                        onClick={() => {
-                          setActiveCategory('All');
-                          setSelectedSizeFilter('All');
-                          setSelectedPriceFilter('All');
-                          setSearchQuery('');
-                        }}
-                        className="mt-2 bg-stone-900 text-amber-400 font-bold px-6 py-2.5 rounded-full text-xs uppercase tracking-wider"
-                      >
-                        Reset All Filters
-                      </button>
-                    </>
-                  )}
-                </div>
-              ) : (
-                displayedProducts.map((product) => {
-                  const isWishlisted = wishlist.some((w) => String(w.id) === String(product.id));
-                  const isSoldOut = product.stock === 0;
-                  const isLowStock = product.stock > 0 && product.stock <= 3;
-
-                  return (
-                    <div
-                      key={product.id || product.name}
-                      onClick={() => openSingleProduct(product)}
-                      className="bg-white rounded-3xl overflow-hidden border border-stone-200/80 shadow-sm hover:shadow-xl transition duration-300 flex flex-col group relative cursor-pointer"
-                    >
-                      <div className="absolute top-3 right-3 z-30 flex items-center gap-1.5">
-                        <button
-                          type="button"
-                          onClick={(e) => handleShareClick(e, product)}
-                          className="p-2.5 bg-white/90 backdrop-blur-md rounded-full shadow-md hover:scale-110 active:scale-95 transition text-stone-700 hover:text-amber-600"
-                          title="Share Outfit"
-                        >
-                          <Share2 className="w-4 h-4" />
-                        </button>
-
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            toggleWishlist(product);
-                          }}
-                          className="p-2.5 bg-white/90 backdrop-blur-md rounded-full shadow-md hover:scale-110 active:scale-95 transition"
-                          title="Save to Wishlist"
-                        >
-                          <Heart className={`w-4 h-4 ${isWishlisted ? 'fill-rose-500 text-rose-500' : 'text-stone-700'}`} />
-                        </button>
-                      </div>
-
-                      <div className="relative h-80 sm:h-72 md:h-80 w-full bg-stone-100 overflow-hidden">
-                        <img
-                          src={product.image}
-                          alt={product.name}
-                          loading="lazy"
-                          className={`w-full h-full object-cover group-hover:scale-105 transition duration-500 ${isSoldOut ? 'grayscale brightness-75' : ''}`}
-                        />
-
-                        {/* Stock Badges */}
-                        {isSoldOut ? (
-                          <span className="absolute top-3 left-3 bg-stone-950 text-white text-[11px] font-black px-3.5 py-1 rounded-full uppercase tracking-wider shadow">
-                            SOLD OUT
-                          </span>
-                        ) : isLowStock ? (
-                          <span className="absolute top-3 left-3 bg-amber-500 text-stone-950 text-[11px] font-black px-3 py-1 rounded-full uppercase tracking-wider shadow flex items-center gap-1">
-                            <AlertTriangle className="w-3.5 h-3.5 text-stone-950" /> ONLY {product.stock} LEFT
-                          </span>
-                        ) : product.is_tiktok_featured ? (
-                          <span className="absolute top-3 left-3 bg-stone-900/90 text-amber-400 text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-wider shadow">
-                            TIKTOK REEL
-                          </span>
-                        ) : null}
-                      </div>
-
-                      <div className="p-5 flex-1 flex flex-col justify-between space-y-4">
-                        <div>
-                          <span className="text-[10px] font-bold text-amber-700 uppercase tracking-wider block mb-1">{product.category}</span>
-                          <h3 className="text-base sm:text-lg font-bold text-stone-900 truncate">{product.name}</h3>
-                          <p className="text-lg sm:text-xl font-black text-amber-600 mt-1">
-                            {formatCurrencyPrice(product.price)}
-                          </p>
-                        </div>
-
-                        {/* Uncongested Luxury Action Buttons */}
-                        <div className="grid grid-cols-2 gap-2.5 pt-1">
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              openSingleProduct(product);
-                            }}
-                            className="bg-stone-100 hover:bg-stone-200 text-stone-900 font-extrabold py-3 rounded-2xl text-xs flex items-center justify-center gap-1.5 transition"
-                          >
-                            <Eye className="w-4 h-4 text-amber-600" /> View Fit
-                          </button>
-                          
-                          <button
-                            disabled={isSoldOut}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              addToCart(product);
-                            }}
-                            className={`font-extrabold py-3 rounded-2xl text-xs flex items-center justify-center gap-1.5 transition shadow-md ${
-                              isSoldOut
-                                ? 'bg-stone-200 text-stone-400 cursor-not-allowed shadow-none'
-                                : 'bg-stone-900 hover:bg-black text-amber-400'
-                            }`}
-                          >
-                            <ShoppingCart className="w-4 h-4 text-amber-400" /> {isSoldOut ? 'Sold Out' : '+ Add Cart'}
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })
               )}
             </div>
 
-            {/* Load More Outfits Pagination Button */}
-            {visibleCount < filteredProducts.length && (
-              <div className="text-center pt-8">
-                <button
-                  onClick={() => setVisibleCount((prev) => prev + 8)}
-                  className="bg-stone-900 hover:bg-black text-amber-400 font-black px-8 py-3.5 rounded-2xl text-xs uppercase tracking-wider shadow-xl inline-flex items-center gap-2 transition hover:scale-105 active:scale-95"
-                >
-                  <ChevronDown className="w-4 h-4 text-amber-400" />
-                  <span>Load More Outfits (Showing {displayedProducts.length} of {filteredProducts.length})</span>
-                </button>
-              </div>
-            )}
-          </div>
-
-          <SharedFooter />
-        </main>
+            <SharedFooter />
+          </main>
+        </div>
       )}
 
       {/* TikTok Reels View */}
