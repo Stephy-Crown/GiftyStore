@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import siteConfig from './data/config.json';
 import { getFashionProducts } from './services/supabase';
 import { TikTokShopSection } from './components/fashion/TikTokShopSection';
@@ -58,6 +58,7 @@ export default function App() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedSizeFilter, setSelectedSizeFilter] = useState('All');
   const [selectedPriceFilter, setSelectedPriceFilter] = useState('All');
+  const searchInputRef = useRef(null);
 
   // Lazy Loading / Pagination State (Display 8 products at a time)
   const [visibleCount, setVisibleCount] = useState(8);
@@ -92,7 +93,7 @@ export default function App() {
       tag: "ANKARA & ADIRE LUXE",
       title: "Hand-Crafted Ankara Lace & Silk Sets",
       type: "image",
-      imageUrl: "https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?w=1920&auto=format&fit=crop&q=85",
+      imageUrl: "https://images.unsplash.com/photo-1567401893414-76b7b1e5a7a5?w=1920&auto=format&fit=crop&q=85",
       cta: "Shop Ankara Fits"
     },
     {
@@ -100,7 +101,7 @@ export default function App() {
       tag: "ROYAL VELVET COUTURE",
       title: "Lagos VIP Wedding & Evening Velvet Sets",
       type: "image",
-      imageUrl: "https://images.unsplash.com/photo-1567401893414-76b7b1e5a7a5?w=1920&auto=format&fit=crop&q=85",
+      imageUrl: "https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?w=1920&auto=format&fit=crop&q=85",
       cta: "Shop Velvet Couture"
     },
     {
@@ -108,7 +109,7 @@ export default function App() {
       tag: "VIRAL TIKTOK FASHION",
       title: "Trending Owambe & Two-Piece Fits",
       type: "image",
-      imageUrl: "https://images.unsplash.com/photo-1539109136881-3be0616acf4b?w=1920&auto=format&fit=crop&q=85",
+      imageUrl: "https://images.unsplash.com/photo-1583391733956-6c78276477e2?w=1920&auto=format&fit=crop&q=85",
       cta: "Watch TikTok Reels"
     }
   ];
@@ -128,6 +129,16 @@ export default function App() {
   const navigateToView = (newView) => {
     setView(newView);
     updateUrl(newView, singleProduct?.id || null);
+  };
+
+  const scrollToSearch = () => {
+    if (view !== 'store') setView('store');
+    setTimeout(() => {
+      if (searchInputRef.current) {
+        searchInputRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        searchInputRef.current.focus();
+      }
+    }, 100);
   };
 
   const openSingleProduct = (product, shouldUpdateUrl = true) => {
@@ -403,7 +414,7 @@ export default function App() {
             <BrandLogoCrest />
           </div>
 
-          {/* Uncongested 3-Button Header Navigation with URL Sync */}
+          {/* Uncongested Header Navigation with URL Sync & Compact 1-Tap Search Button */}
           <div className="flex items-center gap-1.5 sm:gap-2">
             <button
               onClick={() => navigateToView('store')}
@@ -430,10 +441,19 @@ export default function App() {
               <TikTokIcon className={`w-3.5 h-3.5 ${view === 'reels' ? 'text-white fill-white' : 'text-rose-600 fill-rose-600'}`} />
               <span>TikTok</span>
             </button>
+
+            {/* Compact 1-Tap Search Button (Uncongested Icon Button on Mobile) */}
+            <button
+              onClick={scrollToSearch}
+              className="p-2 sm:p-2.5 bg-stone-100 hover:bg-stone-200 text-stone-800 rounded-full transition shadow-sm"
+              title="Search Outfits"
+            >
+              <Search className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-stone-800" />
+            </button>
             
             <button
               onClick={() => setIsCartOpen(!isCartOpen)}
-              className="relative p-2 sm:p-2.5 bg-stone-950 hover:bg-black text-amber-400 rounded-full shadow-md transition ml-1"
+              className="relative p-2 sm:p-2.5 bg-stone-950 hover:bg-black text-amber-400 rounded-full shadow-md transition"
               title="Shopping Cart"
             >
               <ShoppingCart className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-400" />
@@ -451,7 +471,7 @@ export default function App() {
       {view === 'store' && (
         <main className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 py-6 space-y-10 md:space-y-14 overflow-x-hidden">
           
-          {/* High-Fashion Hero Banner with Extended Height for Full Outfit Viewing */}
+          {/* High-Fashion Hero Banner — Desktop Centered Outfit Focus (Clothes Shown, Not Model Face) */}
           <div className="relative h-[420px] sm:h-[480px] md:h-[540px] rounded-3xl overflow-hidden shadow-2xl border border-stone-200 flex flex-col justify-end p-6 sm:p-10 md:p-12">
             {heroSlides.map((slide, idx) => (
               <div
@@ -464,7 +484,7 @@ export default function App() {
                   <video
                     src={slide.videoUrl}
                     poster={slide.posterUrl}
-                    className="w-full h-full object-cover object-top brightness-95"
+                    className="w-full h-full object-cover object-center md:object-[center_35%] brightness-95"
                     autoPlay
                     loop
                     muted
@@ -475,7 +495,7 @@ export default function App() {
                     src={slide.imageUrl}
                     alt={slide.title}
                     loading="lazy"
-                    className="w-full h-full object-cover object-top brightness-95"
+                    className="w-full h-full object-cover object-center md:object-[center_35%] brightness-95"
                   />
                 )}
               </div>
@@ -551,23 +571,24 @@ export default function App() {
                 </button>
               </div>
 
-              {/* Instant Live Product Search Bar */}
+              {/* Instant Live Product Search Bar - 100% Responsive on Mobile & Desktop */}
               <div className="relative w-full">
                 <input
+                  ref={searchInputRef}
                   type="text"
-                  placeholder="Search outfits by name, fabric, or style (e.g. Corset, Velvet, Ankara, Adire)..."
+                  placeholder="Search outfits by name, fabric, or style..."
                   value={searchQuery}
                   onChange={(e) => {
                     setSearchQuery(e.target.value);
                     setVisibleCount(8);
                   }}
-                  className="w-full pl-10 pr-10 py-3 bg-white border border-stone-200/90 rounded-2xl text-xs font-bold text-stone-900 outline-none focus:border-stone-900 shadow-sm transition"
+                  className="w-full pl-9 pr-8 py-2.5 bg-white border border-stone-200/90 rounded-2xl text-xs font-bold text-stone-900 outline-none focus:border-stone-900 shadow-sm transition placeholder:text-stone-400"
                 />
-                <Search className="w-4 h-4 text-amber-600 absolute left-3.5 top-3.5" />
+                <Search className="w-4 h-4 text-amber-600 absolute left-3 top-3 pointer-events-none" />
                 {searchQuery && (
                   <button
                     onClick={() => setSearchQuery('')}
-                    className="absolute right-3.5 top-3.5 text-stone-400 hover:text-stone-900 text-xs font-bold bg-stone-100 w-5 h-5 rounded-full flex items-center justify-center"
+                    className="absolute right-2.5 top-2.5 text-stone-400 hover:text-stone-900 text-xs font-bold bg-stone-100 w-5 h-5 rounded-full flex items-center justify-center"
                     title="Clear search query"
                   >
                     ✕
