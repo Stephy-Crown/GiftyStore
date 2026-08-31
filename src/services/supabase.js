@@ -9,7 +9,7 @@ export const supabase =
     ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
     : null;
 
-// Supabase Email & Password Authentication for Admin Dashboard (With Persistent LocalStorage Fallback)
+// Clean Authentication for Admin Dashboard (With Persistent Session Storage)
 export async function signInAdmin(email, password) {
   const targetEmail = email || 'owner@giftystore.com';
   
@@ -20,7 +20,7 @@ export async function signInAdmin(email, password) {
       localStorage.setItem('gifty_admin_session', JSON.stringify(devSession));
       return devSession;
     }
-    return { user: null, session: null, error: { message: 'Invalid Admin Credentials (Default: gifty2026)' } };
+    return { user: null, session: null, error: { message: 'Invalid email or password.' } };
   }
 
   try {
@@ -46,12 +46,12 @@ export async function updateAdminEmail(newEmail) {
       parsed.user = { ...parsed.user, email: newEmail };
       localStorage.setItem('gifty_admin_session', JSON.stringify(parsed));
     }
-    return { user: { email: newEmail }, success: true, message: 'Local development admin email updated!' };
+    return { user: { email: newEmail }, success: true, message: 'Admin email updated!' };
   }
   try {
     const { data, error } = await supabase.auth.updateUser({ email: newEmail });
     if (error) return { user: null, success: false, message: error.message };
-    return { user: data.user, success: true, message: 'Admin email update request sent! Please check your new inbox to confirm.' };
+    return { user: data.user, success: true, message: 'Confirmation request sent to your new email inbox.' };
   } catch (err) {
     return { user: null, success: false, message: err.message };
   }
@@ -59,12 +59,12 @@ export async function updateAdminEmail(newEmail) {
 
 export async function updateAdminPassword(newPassword) {
   if (!supabase) {
-    return { user: { email: 'owner@giftystore.com' }, success: true, message: 'Local development password updated!' };
+    return { user: { email: 'owner@giftystore.com' }, success: true, message: 'Password updated!' };
   }
   try {
     const { data, error } = await supabase.auth.updateUser({ password: newPassword });
     if (error) return { user: null, success: false, message: error.message };
-    return { user: data.user, success: true, message: 'Admin password updated securely in Supabase!' };
+    return { user: data.user, success: true, message: 'Password updated successfully!' };
   } catch (err) {
     return { user: null, success: false, message: err.message };
   }

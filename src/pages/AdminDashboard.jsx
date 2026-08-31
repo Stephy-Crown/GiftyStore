@@ -6,7 +6,7 @@ import { updateProductInSupabase, deleteProductFromSupabase, addProductToSupabas
 export function AdminDashboard({ products, setProducts, showToast }) {
   const [activeTab, setActiveTab] = useState('products'); // 'products' | 'negotiate' | 'security'
   
-  // Supabase Auth / Login Lock State
+  // Login Lock State
   const [isUnlocked, setIsUnlocked] = useState(false);
   const [adminEmail, setAdminEmail] = useState('');
   const [adminPassword, setAdminPassword] = useState('');
@@ -43,7 +43,7 @@ export function AdminDashboard({ products, setProducts, showToast }) {
   // Delete Confirmation Modal State
   const [deleteConfirmProduct, setDeleteConfirmProduct] = useState(null);
 
-  // Edit Product Form State (Includes Stock Management)
+  // Edit Product Form State
   const [editingId, setEditingId] = useState(null);
   const [form, setForm] = useState({
     name: '',
@@ -69,7 +69,7 @@ export function AdminDashboard({ products, setProducts, showToast }) {
     }
   };
 
-  // Check persistent admin session on mount
+  // Check persistent session on mount
   useEffect(() => {
     async function checkSession() {
       const session = await getCurrentAdminSession();
@@ -97,14 +97,14 @@ export function AdminDashboard({ products, setProducts, showToast }) {
       setFailedAttempts(0);
       setAdminPassword('');
       setLoginError('');
-      triggerToast('Authenticated Store Owner Portal!');
+      triggerToast('Authenticated Store Control Center');
     } else {
       const nextFail = failedAttempts + 1;
       setFailedAttempts(nextFail);
 
       if (nextFail >= 3) {
         setLockoutTimer(60);
-        setLoginError('Security Lockout Active! 3 failed login attempts.');
+        setLoginError('Security lockout active (60 seconds).');
         const timer = setInterval(() => {
           setLockoutTimer((prev) => {
             if (prev <= 1) {
@@ -125,7 +125,7 @@ export function AdminDashboard({ products, setProducts, showToast }) {
     await signOutAdmin();
     setIsUnlocked(false);
     setCurrentAdminUser(null);
-    triggerToast('Admin Session Signed Out');
+    triggerToast('Signed out of admin dashboard');
   };
 
   const handleUpdateEmail = async (e) => {
@@ -133,7 +133,7 @@ export function AdminDashboard({ products, setProducts, showToast }) {
     setEmailChangeSuccess('');
     setEmailChangeError('');
     if (!newEmailInput || !newEmailInput.includes('@')) {
-      setEmailChangeError('Please enter a valid new email address.');
+      setEmailChangeError('Please enter a valid email address.');
       return;
     }
 
@@ -141,12 +141,12 @@ export function AdminDashboard({ products, setProducts, showToast }) {
     const res = await updateAdminEmail(newEmailInput);
     setIsUpdatingEmail(false);
 
-    if (res.user) {
-      setEmailChangeSuccess(`Confirmation email sent to ${newEmailInput}. Please check inbox!`);
+    if (res.user || res.success) {
+      setEmailChangeSuccess(res.message || 'Email updated successfully!');
       setNewEmailInput('');
-      triggerToast('Email Change Confirmation Sent!');
+      triggerToast('Email updated successfully!');
     } else {
-      setEmailChangeError(res.error?.message || 'Failed to update email address.');
+      setEmailChangeError(res.message || 'Failed to update email.');
     }
   };
 
@@ -155,7 +155,7 @@ export function AdminDashboard({ products, setProducts, showToast }) {
     setPasswordChangeSuccess('');
     setPasswordChangeError('');
     if (!newPasswordInput || newPasswordInput.length < 6) {
-      setPasswordChangeError('Password must be at least 6 characters long.');
+      setPasswordChangeError('Password must be at least 6 characters.');
       return;
     }
 
@@ -163,12 +163,12 @@ export function AdminDashboard({ products, setProducts, showToast }) {
     const res = await updateAdminPassword(newPasswordInput);
     setIsUpdatingPassword(false);
 
-    if (res.user) {
-      setPasswordChangeSuccess('Admin password updated successfully!');
+    if (res.user || res.success) {
+      setPasswordChangeSuccess('Password updated successfully!');
       setNewPasswordInput('');
-      triggerToast('Admin Password Updated Successfully!');
+      triggerToast('Password updated successfully!');
     } else {
-      setPasswordChangeError(res.error?.message || 'Failed to update password.');
+      setPasswordChangeError(res.message || 'Failed to update password.');
     }
   };
 
@@ -178,7 +178,7 @@ export function AdminDashboard({ products, setProducts, showToast }) {
       const reader = new FileReader();
       reader.onloadend = () => {
         setForm((prev) => ({ ...prev, image: reader.result }));
-        triggerToast('Photo loaded from device!');
+        triggerToast('Photo loaded!');
       };
       reader.readAsDataURL(file);
     }
@@ -204,7 +204,7 @@ export function AdminDashboard({ products, setProducts, showToast }) {
     const updated = { ...product, stock: Math.max(0, newStockCount) };
     setProducts((prev) => prev.map((p) => (String(p.id) === String(product.id) ? updated : p)));
     await updateProductInSupabase(product.id, { stock: Math.max(0, newStockCount) });
-    triggerToast(`Updated "${product.name}" stock to ${newStockCount} units!`);
+    triggerToast(`Updated stock to ${newStockCount} units`);
   };
 
   const handleSubmit = async (e) => {
@@ -213,7 +213,7 @@ export function AdminDashboard({ products, setProducts, showToast }) {
     setFormSuccess('');
 
     if (!form.name.trim() || !form.price || !form.image.trim()) {
-      setFormError('Please fill in Outfit Name, Price, and Photo URL/Upload!');
+      setFormError('Please fill in Name, Price, and Photo!');
       return;
     }
 
@@ -232,8 +232,8 @@ export function AdminDashboard({ products, setProducts, showToast }) {
       setProducts((prev) => prev.map((p) => (String(p.id) === String(editingId) ? { ...p, ...payload } : p)));
       const res = await updateProductInSupabase(editingId, payload);
       if (res) {
-        setFormSuccess(`Updated "${payload.name}" successfully!`);
-        triggerToast(`Saved changes for ${payload.name}`);
+        setFormSuccess(`Saved "${payload.name}"!`);
+        triggerToast(`Saved ${payload.name}`);
         setEditingId(null);
         setForm({ name: '', price: '', category: 'Corset Gowns', image: '', video_url: '', sizes: ['S', 'M', 'L', 'XL'], is_tiktok_featured: true, stock: 5 });
         setShowMobileForm(false);
@@ -248,8 +248,8 @@ export function AdminDashboard({ products, setProducts, showToast }) {
         setProducts((prev) => prev.map((p) => (p.id === tempId ? res[0] : p)));
       }
 
-      setFormSuccess(`Published "${payload.name}" to Storefront!`);
-      triggerToast(`Published ${payload.name} to live catalog`);
+      setFormSuccess(`Published "${payload.name}"!`);
+      triggerToast(`Published ${payload.name}`);
       setForm({ name: '', price: '', category: 'Corset Gowns', image: '', video_url: '', sizes: ['S', 'M', 'L', 'XL'], is_tiktok_featured: true, stock: 5 });
       setShowMobileForm(false);
     }
@@ -260,7 +260,7 @@ export function AdminDashboard({ products, setProducts, showToast }) {
     const targetId = deleteConfirmProduct.id;
     setProducts((prev) => prev.filter((p) => String(p.id) !== String(targetId)));
     await deleteProductFromSupabase(targetId);
-    triggerToast(`Deleted "${deleteConfirmProduct.name}" from catalog`);
+    triggerToast(`Deleted "${deleteConfirmProduct.name}"`);
     setDeleteConfirmProduct(null);
   };
 
@@ -271,11 +271,11 @@ export function AdminDashboard({ products, setProducts, showToast }) {
     setCopiedLink(false);
 
     if (!negotiatedProduct) {
-      setNegotiateError('Please select an outfit to negotiate.');
+      setNegotiateError('Please select an outfit.');
       return;
     }
     if (!discountedPrice || Number(discountedPrice) <= 0) {
-      setNegotiateError('Please enter a valid discounted price in NGN.');
+      setNegotiateError('Please enter a valid price in NGN.');
       return;
     }
 
@@ -286,14 +286,14 @@ export function AdminDashboard({ products, setProducts, showToast }) {
     const generated = `${baseUrl}?product=${prodId}&discountedPrice=${discountedPrice}&checkout=true`;
 
     setGeneratedLink(generated);
-    triggerToast('Custom Discounted Payment Link Created!');
+    triggerToast('Discounted link generated');
   };
 
   const copyGeneratedLink = () => {
     if (generatedLink) {
       navigator.clipboard.writeText(generatedLink);
       setCopiedLink(true);
-      triggerToast('Copied Discounted Link to Clipboard!');
+      triggerToast('Link copied to clipboard!');
       setTimeout(() => setCopiedLink(false), 3000);
     }
   };
@@ -313,16 +313,16 @@ export function AdminDashboard({ products, setProducts, showToast }) {
   const startIndex = (currentPage - 1) * itemsPerPage;
   const paginatedProducts = filteredAdminProducts.slice(startIndex, startIndex + itemsPerPage);
 
-  // If Lockout/Login Screen
+  // Professional Sleek Login Screen
   if (!isUnlocked) {
     return (
-      <div className="max-w-md mx-auto my-6 sm:my-12 bg-white rounded-3xl p-5 sm:p-8 border border-stone-200 shadow-2xl space-y-6 overflow-x-hidden">
+      <div className="max-w-md mx-auto my-6 sm:my-12 bg-white rounded-3xl p-6 sm:p-8 border border-stone-200 shadow-2xl space-y-6 overflow-x-hidden">
         <div className="text-center space-y-2">
-          <div className="w-12 h-12 sm:w-14 sm:h-14 bg-stone-900 text-amber-400 rounded-2xl flex items-center justify-center mx-auto shadow-lg">
-            <Lock className="w-6 h-6 sm:w-7 sm:h-7" />
+          <div className="w-12 h-12 bg-stone-900 text-amber-400 rounded-2xl flex items-center justify-center mx-auto shadow-lg">
+            <Lock className="w-6 h-6" />
           </div>
-          <h2 className="text-xl sm:text-2xl font-serif font-black text-stone-900">GIFTY Owner Admin Portal</h2>
-          <p className="text-xs text-stone-500">Enter your Supabase Store Owner account credentials to log in.</p>
+          <h2 className="text-xl sm:text-2xl font-serif font-black text-stone-900">GIFTY Store Management</h2>
+          <p className="text-xs text-stone-500">Sign in to manage catalog, inventory, and payment links.</p>
         </div>
 
         {loginError && (
@@ -334,7 +334,7 @@ export function AdminDashboard({ products, setProducts, showToast }) {
 
         <form onSubmit={handleUnlock} className="space-y-4">
           <div className="space-y-1">
-            <label className="text-xs font-bold text-stone-700 block">Admin Email Address</label>
+            <label className="text-xs font-bold text-stone-700 block">Email Address</label>
             <input
               type="email"
               placeholder="owner@giftystore.com"
@@ -345,7 +345,7 @@ export function AdminDashboard({ products, setProducts, showToast }) {
           </div>
 
           <div className="space-y-1">
-            <label className="text-xs font-bold text-stone-700 block">Admin Account Password</label>
+            <label className="text-xs font-bold text-stone-700 block">Password</label>
             <input
               type="password"
               placeholder="••••••••••••"
@@ -364,7 +364,7 @@ export function AdminDashboard({ products, setProducts, showToast }) {
                 : 'bg-stone-900 hover:bg-black text-amber-400'
             }`}
           >
-            {isLoggingIn ? 'Authenticating...' : lockoutTimer > 0 ? `Locked (${lockoutTimer}s)` : 'Unlock Admin Dashboard'}
+            {isLoggingIn ? 'Signing In...' : lockoutTimer > 0 ? `Locked (${lockoutTimer}s)` : 'Sign In'}
           </button>
         </form>
       </div>
@@ -372,34 +372,28 @@ export function AdminDashboard({ products, setProducts, showToast }) {
   }
 
   return (
-    <div className="space-y-5 sm:space-y-8 bg-white rounded-3xl p-3.5 sm:p-8 border border-stone-200 shadow-xl max-w-7xl mx-auto w-full overflow-x-hidden">
-      {/* Uncongested Admin Header Bar for Mobile & Desktop */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 pb-4 sm:pb-6 border-b border-stone-200">
+    <div className="space-y-5 sm:space-y-8 bg-white rounded-3xl p-4 sm:p-8 border border-stone-200 shadow-xl max-w-7xl mx-auto w-full overflow-x-hidden">
+      {/* Clean Professional Admin Header */}
+      <div className="flex items-center justify-between gap-3 pb-4 sm:pb-6 border-b border-stone-200">
         <div>
-          <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-amber-700 bg-amber-50 px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full border border-amber-200 inline-block">
-            Authenticated Store Owner
-          </span>
-          <h1 className="text-lg sm:text-3xl font-serif font-black text-stone-900 mt-1">GIFTY Owner Control Center</h1>
+          <h1 className="text-xl sm:text-2xl font-serif font-black text-stone-900">GIFTY Control Center</h1>
         </div>
 
-        {/* Compact Sign Out Button */}
-        <div className="flex items-center justify-end gap-2">
-          <button
-            onClick={handleSignOut}
-            className="px-3 py-1.5 sm:px-3.5 sm:py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shrink-0 shadow-sm"
-            title="Sign Out Admin"
-          >
-            <LogOut className="w-3.5 h-3.5" />
-            <span>Sign Out</span>
-          </button>
-        </div>
+        <button
+          onClick={handleSignOut}
+          className="px-3.5 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shrink-0 shadow-sm"
+          title="Sign Out"
+        >
+          <LogOut className="w-3.5 h-3.5" />
+          <span>Sign Out</span>
+        </button>
       </div>
 
-      {/* Uncongested Segmented Tab Switcher — 100% Mobile Friendly Grid */}
+      {/* Clean Professional Segmented Tabs */}
       <div className="grid grid-cols-3 gap-1 sm:gap-2 bg-stone-100 p-1 sm:p-1.5 rounded-2xl border border-stone-200 w-full overflow-hidden">
         <button
           onClick={() => setActiveTab('products')}
-          className={`py-2 px-1 sm:py-2.5 sm:px-2 rounded-xl text-[10px] sm:text-xs font-black transition text-center truncate ${
+          className={`py-2 px-1 sm:py-2.5 sm:px-2 rounded-xl text-[11px] sm:text-xs font-black transition text-center truncate ${
             activeTab === 'products' ? 'bg-stone-900 text-amber-400 shadow-md' : 'text-stone-600 hover:text-stone-900'
           }`}
         >
@@ -407,19 +401,19 @@ export function AdminDashboard({ products, setProducts, showToast }) {
         </button>
         <button
           onClick={() => setActiveTab('negotiate')}
-          className={`py-2 px-1 sm:py-2.5 sm:px-2 rounded-xl text-[10px] sm:text-xs font-black transition text-center truncate ${
+          className={`py-2 px-1 sm:py-2.5 sm:px-2 rounded-xl text-[11px] sm:text-xs font-black transition text-center truncate ${
             activeTab === 'negotiate' ? 'bg-stone-900 text-amber-400 shadow-md' : 'text-stone-600 hover:text-stone-900'
           }`}
         >
-          Negotiated Links
+          Discount Links
         </button>
         <button
           onClick={() => setActiveTab('security')}
-          className={`py-2 px-1 sm:py-2.5 sm:px-2 rounded-xl text-[10px] sm:text-xs font-black transition text-center truncate ${
+          className={`py-2 px-1 sm:py-2.5 sm:px-2 rounded-xl text-[11px] sm:text-xs font-black transition text-center truncate ${
             activeTab === 'security' ? 'bg-stone-900 text-amber-400 shadow-md' : 'text-stone-600 hover:text-stone-900'
           }`}
         >
-          Reset Admin
+          Security
         </button>
       </div>
 
@@ -434,18 +428,18 @@ export function AdminDashboard({ products, setProducts, showToast }) {
             >
               <span className="flex items-center gap-2">
                 <Plus className="w-4 h-4 text-amber-400" />
-                {editingId ? 'Edit Outfit Form' : 'Upload New Outfit'}
+                {editingId ? 'Edit Outfit' : 'Upload Outfit'}
               </span>
-              <span>{showMobileForm ? '▲ Hide Form' : '▼ Expand Form'}</span>
+              <span>{showMobileForm ? '▲ Hide' : '▼ Expand'}</span>
             </button>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8 w-full">
-            {/* Add / Edit Form (Collapsible on Mobile, Persistent on Desktop) */}
+            {/* Add / Edit Form */}
             <div className={`lg:col-span-1 bg-stone-50 p-4 sm:p-6 rounded-3xl border border-stone-200 space-y-4 w-full ${showMobileForm ? 'block' : 'hidden lg:block'}`}>
               <h3 className="text-base sm:text-lg font-serif font-black text-stone-900 flex items-center gap-2">
                 {editingId ? <Edit3 className="w-5 h-5 text-amber-600" /> : <Plus className="w-5 h-5 text-amber-600" />}
-                {editingId ? 'Edit Dress & Restock' : 'Upload New Dress'}
+                {editingId ? 'Edit Outfit' : 'Upload Outfit'}
               </h3>
 
               {formError && (
@@ -461,7 +455,7 @@ export function AdminDashboard({ products, setProducts, showToast }) {
 
               <form onSubmit={handleSubmit} className="space-y-3.5 text-xs w-full">
                 <div className="space-y-1">
-                  <label className="font-bold text-stone-700 block">Dress / Outfit Name</label>
+                  <label className="font-bold text-stone-700 block">Outfit Name</label>
                   <input
                     type="text"
                     placeholder="e.g. Royal Ankara Corset Gown"
@@ -485,7 +479,7 @@ export function AdminDashboard({ products, setProducts, showToast }) {
 
                   <div className="space-y-1">
                     <label className="font-bold text-stone-700 flex items-center gap-1">
-                      <Package className="w-3.5 h-3.5 text-amber-600" /> Stock Units
+                      <Package className="w-3.5 h-3.5 text-amber-600" /> Stock
                     </label>
                     <input
                       type="number"
@@ -512,7 +506,7 @@ export function AdminDashboard({ products, setProducts, showToast }) {
                 </div>
 
                 <div className="space-y-2 pt-1">
-                  <label className="font-bold text-stone-700 block">Outfit Photo (URL or Device Upload)</label>
+                  <label className="font-bold text-stone-700 block">Outfit Photo</label>
                   <input
                     type="text"
                     placeholder="https://images.unsplash.com/..."
@@ -533,13 +527,13 @@ export function AdminDashboard({ products, setProducts, showToast }) {
                       htmlFor="device-photo-upload"
                       className="w-full bg-stone-200 hover:bg-stone-300 text-stone-900 font-bold py-2.5 rounded-xl text-xs flex items-center justify-center gap-2 cursor-pointer transition border border-stone-300"
                     >
-                      <Upload className="w-4 h-4 text-amber-700" /> Upload Photo from Phone / PC
+                      <Upload className="w-4 h-4 text-amber-700" /> Upload Photo
                     </label>
                   </div>
                 </div>
 
                 <div className="space-y-1">
-                  <label className="font-bold text-stone-700 block">Video Reels URL (Optional)</label>
+                  <label className="font-bold text-stone-700 block">Video URL (Optional)</label>
                   <input
                     type="text"
                     placeholder="https://assets.mixkit.co/..."
@@ -552,9 +546,9 @@ export function AdminDashboard({ products, setProducts, showToast }) {
                 <div className="pt-2 flex items-center gap-2">
                   <button
                     type="submit"
-                    className="flex-1 bg-stone-900 hover:bg-black text-amber-400 font-extrabold py-3.5 rounded-xl shadow-lg transition"
+                    className="flex-1 bg-stone-900 hover:bg-black text-amber-400 font-extrabold py-3.5 rounded-xl shadow-lg transition text-xs"
                   >
-                    {editingId ? 'Save Outfit & Stock' : 'Publish Outfit'}
+                    {editingId ? 'Save' : 'Publish'}
                   </button>
                   {editingId && (
                     <button
@@ -564,7 +558,7 @@ export function AdminDashboard({ products, setProducts, showToast }) {
                         setForm({ name: '', price: '', category: 'Corset Gowns', image: '', video_url: '', sizes: ['S', 'M', 'L', 'XL'], is_tiktok_featured: true, stock: 5 });
                         setShowMobileForm(false);
                       }}
-                      className="px-3.5 py-3.5 bg-stone-200 hover:bg-stone-300 text-stone-700 font-bold rounded-xl"
+                      className="px-3.5 py-3.5 bg-stone-200 hover:bg-stone-300 text-stone-700 font-bold rounded-xl text-xs"
                     >
                       Cancel
                     </button>
@@ -573,11 +567,11 @@ export function AdminDashboard({ products, setProducts, showToast }) {
               </form>
             </div>
 
-            {/* Product List with Instant Search, Filter, & Pagination */}
+            {/* Product List */}
             <div className="lg:col-span-2 space-y-4 w-full overflow-x-hidden">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <h3 className="text-base sm:text-lg font-serif font-black text-stone-900">
-                  Live Inventory Outfits ({filteredAdminProducts.length})
+                  Inventory ({filteredAdminProducts.length})
                 </h3>
               </div>
 
@@ -586,7 +580,7 @@ export function AdminDashboard({ products, setProducts, showToast }) {
                 <div className="sm:col-span-2 relative w-full">
                   <input
                     type="text"
-                    placeholder="Quick search catalog by name..."
+                    placeholder="Search catalog by name..."
                     value={adminSearch}
                     onChange={(e) => {
                       setAdminSearch(e.target.value);
@@ -622,11 +616,11 @@ export function AdminDashboard({ products, setProducts, showToast }) {
                 </div>
               </div>
 
-              {/* Paginated Product List (5 Items per Page) */}
+              {/* Paginated Product List */}
               <div className="space-y-3 min-h-[340px] w-full">
                 {paginatedProducts.length === 0 ? (
                   <div className="py-12 text-center bg-stone-50 rounded-2xl border border-stone-200 text-stone-400 text-xs font-bold">
-                    No outfits match your search criteria.
+                    No outfits found.
                   </div>
                 ) : (
                   paginatedProducts.map((item) => {
@@ -655,9 +649,8 @@ export function AdminDashboard({ products, setProducts, showToast }) {
                           </div>
                         </div>
 
-                        {/* Uncongested Non-Overflowing Mobile Stock Counter & Action Buttons */}
+                        {/* Stock Counter & Action Buttons */}
                         <div className="flex flex-wrap items-center justify-between sm:justify-end gap-2 pt-2 sm:pt-0 border-t sm:border-t-0 border-stone-200/80 w-full sm:w-auto">
-                          {/* Stock Controls */}
                           <div className="flex items-center gap-1 bg-white p-1 rounded-xl border border-stone-200 shrink-0">
                             <span className="text-[10px] font-bold text-stone-500 px-1">Stock:</span>
                             <span className={`text-xs font-black px-1 ${isSoldOut ? 'text-rose-600' : 'text-stone-900'}`}>
@@ -667,14 +660,14 @@ export function AdminDashboard({ products, setProducts, showToast }) {
                             <button
                               onClick={() => handleQuickStockUpdate(item, (item.stock || 0) + 1)}
                               className="px-1.5 py-0.5 bg-stone-100 hover:bg-stone-200 text-stone-900 text-[10px] font-black rounded transition"
-                              title="Restock +1 unit"
+                              title="+1 unit"
                             >
                               +1
                             </button>
                             <button
                               onClick={() => handleQuickStockUpdate(item, (item.stock || 0) + 5)}
                               className="px-1.5 py-0.5 bg-amber-400 hover:bg-amber-300 text-stone-950 text-[10px] font-black rounded transition"
-                              title="Restock +5 units"
+                              title="+5 units"
                             >
                               +5
                             </button>
@@ -682,19 +675,18 @@ export function AdminDashboard({ products, setProducts, showToast }) {
                               <button
                                 onClick={() => handleQuickStockUpdate(item, 0)}
                                 className="px-1 py-0.5 bg-rose-50 hover:bg-rose-100 text-rose-700 text-[9px] font-bold rounded transition"
-                                title="Mark as Sold Out"
+                                title="Mark 0"
                               >
                                 Mark 0
                               </button>
                             )}
                           </div>
 
-                          {/* Edit / Delete Buttons */}
                           <div className="flex items-center gap-1.5 shrink-0">
                             <button
                               onClick={() => handleEditClick(item)}
                               className="p-2 bg-white hover:bg-stone-100 text-stone-700 rounded-xl border border-stone-200 shadow-sm transition"
-                              title="Edit outfit"
+                              title="Edit"
                             >
                               <Edit3 className="w-3.5 h-3.5 text-amber-700" />
                             </button>
@@ -702,7 +694,7 @@ export function AdminDashboard({ products, setProducts, showToast }) {
                             <button
                               onClick={() => setDeleteConfirmProduct(item)}
                               className="p-2 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-xl border border-rose-200 transition"
-                              title="Delete outfit"
+                              title="Delete"
                             >
                               <Trash2 className="w-3.5 h-3.5" />
                             </button>
@@ -750,10 +742,10 @@ export function AdminDashboard({ products, setProducts, showToast }) {
         <div className="max-w-xl mx-auto space-y-6 bg-stone-50 p-5 sm:p-8 rounded-3xl border border-stone-200 w-full overflow-x-hidden">
           <div className="space-y-1">
             <h3 className="text-base sm:text-lg font-serif font-black text-stone-900 flex items-center gap-2">
-              <Tag className="w-5 h-5 text-amber-600" /> WhatsApp Negotiated Price Link Generator
+              <Tag className="w-5 h-5 text-amber-600" /> WhatsApp Payment Link Generator
             </h3>
             <p className="text-xs text-stone-500">
-              Create a custom payment link for a customer after WhatsApp price negotiations.
+              Create a custom discounted checkout link for your customer.
             </p>
           </div>
 
@@ -774,7 +766,7 @@ export function AdminDashboard({ products, setProducts, showToast }) {
                 <option value="">-- Choose Outfit --</option>
                 {products.map((p) => (
                   <option key={p.id} value={p.id}>
-                    {p.name} (Listed: NGN {Number(p.price).toLocaleString()})
+                    {p.name} (NGN {Number(p.price).toLocaleString()})
                   </option>
                 ))}
               </select>
@@ -795,14 +787,14 @@ export function AdminDashboard({ products, setProducts, showToast }) {
               type="submit"
               className="w-full bg-stone-900 hover:bg-black text-amber-400 font-black py-3.5 rounded-2xl text-xs uppercase tracking-wider shadow-lg transition"
             >
-              Generate Discounted Link
+              Generate Link
             </button>
           </form>
 
           {generatedLink && (
             <div className="pt-4 border-t border-stone-200 space-y-3 w-full">
               <span className="text-[10px] font-black uppercase tracking-wider text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200 inline-block">
-                Generated Customer Payment Link
+                Customer Payment Link
               </span>
               
               <div className="p-3 bg-white border border-stone-200 rounded-2xl break-all text-xs font-mono text-stone-800">
@@ -814,7 +806,7 @@ export function AdminDashboard({ products, setProducts, showToast }) {
                 className="w-full bg-amber-400 hover:bg-amber-300 text-stone-950 font-black py-3 rounded-2xl text-xs flex items-center justify-center gap-2 shadow-md transition"
               >
                 {copiedLink ? <Check className="w-4 h-4 text-stone-950" /> : <Copy className="w-4 h-4 text-stone-950" />}
-                <span>{copiedLink ? 'Link Copied to Clipboard!' : 'Copy Link for Customer'}</span>
+                <span>{copiedLink ? 'Copied!' : 'Copy Link'}</span>
               </button>
             </div>
           )}
@@ -826,17 +818,17 @@ export function AdminDashboard({ products, setProducts, showToast }) {
         <div className="max-w-xl mx-auto space-y-6 bg-stone-50 p-5 sm:p-8 rounded-3xl border border-stone-200 w-full overflow-x-hidden">
           <div className="space-y-1">
             <h3 className="text-base sm:text-lg font-serif font-black text-stone-900 flex items-center gap-2">
-              <Key className="w-5 h-5 text-amber-600" /> Reset Admin Login Details
+              <Key className="w-5 h-5 text-amber-600" /> Account Security
             </h3>
             <p className="text-xs text-stone-500">
-              Update your store owner email address or change your login password directly in Supabase Auth.
+              Update your manager email address or password.
             </p>
           </div>
 
           {/* Email Update Form */}
           <div className="bg-white p-4 sm:p-5 rounded-2xl border border-stone-200 space-y-3 w-full">
             <h4 className="font-extrabold text-xs text-stone-900 flex items-center gap-2">
-              <Mail className="w-4 h-4 text-amber-600" /> Change Admin Email Address
+              <Mail className="w-4 h-4 text-amber-600" /> Change Email
             </h4>
 
             {emailChangeError && (
@@ -861,9 +853,9 @@ export function AdminDashboard({ products, setProducts, showToast }) {
               <button
                 type="submit"
                 disabled={isUpdatingEmail}
-                className="w-full bg-stone-900 hover:bg-black text-amber-400 font-bold py-2.5 rounded-xl transition"
+                className="w-full bg-stone-900 hover:bg-black text-amber-400 font-bold py-2.5 rounded-xl transition text-xs"
               >
-                {isUpdatingEmail ? 'Updating Email...' : 'Update Admin Email'}
+                {isUpdatingEmail ? 'Updating...' : 'Update Email'}
               </button>
             </form>
           </div>
@@ -871,7 +863,7 @@ export function AdminDashboard({ products, setProducts, showToast }) {
           {/* Password Update Form */}
           <div className="bg-white p-4 sm:p-5 rounded-2xl border border-stone-200 space-y-3 w-full">
             <h4 className="font-extrabold text-xs text-stone-900 flex items-center gap-2">
-              <Lock className="w-4 h-4 text-amber-600" /> Change Admin Password
+              <Lock className="w-4 h-4 text-amber-600" /> Change Password
             </h4>
 
             {passwordChangeError && (
@@ -896,9 +888,9 @@ export function AdminDashboard({ products, setProducts, showToast }) {
               <button
                 type="submit"
                 disabled={isUpdatingPassword}
-                className="w-full bg-amber-500 hover:bg-amber-400 text-stone-950 font-black py-2.5 rounded-xl transition"
+                className="w-full bg-amber-500 hover:bg-amber-400 text-stone-950 font-black py-2.5 rounded-xl transition text-xs"
               >
-                {isUpdatingPassword ? 'Updating Password...' : 'Update Admin Password'}
+                {isUpdatingPassword ? 'Updating...' : 'Update Password'}
               </button>
             </form>
           </div>
@@ -916,7 +908,7 @@ export function AdminDashboard({ products, setProducts, showToast }) {
             <div>
               <h3 className="text-lg font-serif font-black text-stone-900">Delete Outfit?</h3>
               <p className="text-xs text-stone-500">
-                Are you sure you want to permanently remove "{deleteConfirmProduct.name}" from your store catalog?
+                Are you sure you want to permanently remove "{deleteConfirmProduct.name}"?
               </p>
             </div>
 
@@ -931,7 +923,7 @@ export function AdminDashboard({ products, setProducts, showToast }) {
                 onClick={confirmDelete}
                 className="w-full bg-rose-600 hover:bg-rose-700 text-white font-bold py-3 rounded-xl text-xs shadow transition"
               >
-                Yes, Delete
+                Delete
               </button>
             </div>
           </div>
