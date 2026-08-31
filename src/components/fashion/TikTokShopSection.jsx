@@ -1,5 +1,5 @@
 import React from 'react';
-import { ShoppingBag, Sparkles, Flame, Tag, Eye, Play } from 'lucide-react';
+import { ShoppingBag, Sparkles, Flame, Tag, Eye, ArrowRight, Play } from 'lucide-react';
 import { formatCurrencyPrice } from '../../App';
 
 // Official TikTok SVG Vector Icon
@@ -11,115 +11,135 @@ function TikTokIcon({ className = "w-5 h-5" }) {
   );
 }
 
-export function TikTokShopSection({ products = [], onAddToCart, onOpenSingleProduct }) {
+export function TikTokShopSection({ products = [], onAddToCart, onOpenSingleProduct, onNavigateToTikTokTab }) {
   const safeProducts = Array.isArray(products) ? products.filter(Boolean) : [];
   const reels = safeProducts.filter((p) => p.video_url || p.is_tiktok_featured);
   const displayReels = reels.length > 0 ? reels : safeProducts;
 
   return (
-    <section className="py-8 space-y-8">
-      {/* Elegantly Structured High-Fashion TikTok Media Header */}
+    <section className="py-6 sm:py-8 space-y-6">
+      {/* Clean & Ultra-Sleek High-Fashion TikTok Section Header */}
       <div className="text-center space-y-3 px-4 max-w-2xl mx-auto">
-        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-gradient-to-r from-rose-600 via-rose-500 to-amber-500 text-white font-black text-[11px] tracking-widest uppercase shadow-lg border border-rose-400/40">
-          <Flame className="w-4 h-4 fill-amber-300 text-amber-300" />
-          <span>VIRAL TIKTOK FITS & EXCLUSIVE DEALS</span>
+        <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-rose-500 text-white font-extrabold text-[10px] sm:text-[11px] tracking-wider uppercase shadow-md">
+          <Flame className="w-3.5 h-3.5 fill-amber-300 text-amber-300" />
+          <span>VIRAL TIKTOK DEALS</span>
         </div>
 
-        <h2 className="text-3xl sm:text-4xl md:text-5xl font-serif font-black text-stone-900 tracking-tight leading-tight">
-          As Seen On <span className="text-rose-600 underline decoration-amber-400 decoration-wavy underline-offset-4">@GiftyStore</span> TikTok
+        <h2 className="text-2xl sm:text-4xl font-serif font-black text-stone-900 tracking-tight leading-tight">
+          As Seen On <span className="text-rose-600">@GiftyStore</span> TikTok
         </h2>
 
-        <p className="text-xs sm:text-sm text-stone-600 font-medium leading-relaxed">
-          Watch viral video reels in motion & order your dress with 1-click Paystack checkout or instant WhatsApp price negotiation!
+        <p className="text-xs sm:text-sm text-stone-600 font-medium leading-relaxed max-w-md mx-auto">
+          Watch viral video reels in motion & order your dress with 1-click Paystack checkout or WhatsApp negotiation!
         </p>
 
-        {/* TikTok Follow & Community Button */}
-        <div className="pt-2 flex flex-wrap items-center justify-center gap-2">
+        {/* Action Button Row */}
+        <div className="pt-1 flex flex-wrap items-center justify-center gap-2">
+          {typeof onNavigateToTikTokTab === 'function' && (
+            <button
+              onClick={onNavigateToTikTokTab}
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-rose-600 hover:bg-rose-700 text-white text-xs font-black transition shadow-lg hover:scale-105 active:scale-95"
+            >
+              <span>Explore All TikTok Deals</span>
+              <ArrowRight className="w-4 h-4 text-white" />
+            </button>
+          )}
+
           <a
             href="https://tiktok.com"
             target="_blank"
             rel="noreferrer"
-            className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-stone-950 text-white text-xs font-black hover:bg-black transition shadow-xl hover:scale-105 active:scale-95 border border-stone-800"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-stone-900 hover:bg-black text-white text-xs font-bold transition shadow-md"
           >
             <TikTokIcon className="w-4 h-4 text-rose-400" />
-            <span>Follow @GiftyStore on TikTok (150K+ Community)</span>
+            <span>Follow @GiftyStore (150K+)</span>
           </a>
         </div>
       </div>
 
-      {/* Grid of Vertical TikTok Video Reel Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto px-4">
-        {displayReels.map((reel) => (
-          <div
-            key={reel.id || reel.name}
-            onClick={() => typeof onOpenSingleProduct === 'function' && onOpenSingleProduct(reel)}
-            className="relative rounded-3xl overflow-hidden h-[480px] sm:h-[500px] shadow-2xl bg-stone-900 border border-stone-200 group cursor-pointer"
-          >
-            {reel.video_url ? (
-              <video
-                src={reel.video_url}
-                poster={reel.image}
-                className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
-                autoPlay
-                loop
-                muted
-                playsInline
-              />
-            ) : (
-              <img
-                src={reel.image}
-                alt={reel.name}
-                className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
-              />
-            )}
+      {/* Grid of Vertical TikTok Video Reel Cards — Fully Responsive */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6 max-w-6xl mx-auto px-4">
+        {displayReels.map((reel) => {
+          const isSoldOut = reel.stock === 0;
 
-            {/* Top Badge: TikTok Special */}
-            <div className="absolute top-3 left-3 z-20 flex items-center gap-1.5">
-              <span className="bg-rose-600/90 backdrop-blur-md text-white font-extrabold text-[10px] px-3 py-1 rounded-full uppercase shadow flex items-center gap-1">
-                <Tag className="w-3 h-3 text-amber-300" /> TIKTOK SPECIAL DEAL
-              </span>
-            </div>
+          return (
+            <div
+              key={reel.id || reel.name}
+              onClick={() => typeof onOpenSingleProduct === 'function' && onOpenSingleProduct(reel)}
+              className="relative rounded-3xl overflow-hidden h-[460px] sm:h-[500px] shadow-2xl bg-stone-900 border border-stone-200 group cursor-pointer"
+            >
+              {reel.video_url ? (
+                <video
+                  src={reel.video_url}
+                  poster={reel.image}
+                  className={`w-full h-full object-cover group-hover:scale-105 transition duration-500 ${isSoldOut ? 'grayscale brightness-75' : ''}`}
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                />
+              ) : (
+                <img
+                  src={reel.image}
+                  alt={reel.name}
+                  className={`w-full h-full object-cover group-hover:scale-105 transition duration-500 ${isSoldOut ? 'grayscale brightness-75' : ''}`}
+                />
+              )}
 
-            {/* Bottom Overlay Card */}
-            <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-stone-950 via-stone-950/90 to-transparent p-6 flex flex-col justify-end text-white z-10">
-              <span className="text-[10px] bg-amber-500 text-stone-950 font-black px-3 py-1 rounded-full w-fit uppercase tracking-wider mb-2 shadow">
-                VIRAL REEL FASHION
-              </span>
-              <h3 className="text-lg font-bold leading-snug">{reel.name}</h3>
-              <span className="text-xl font-black text-amber-400 my-1">
-                {formatCurrencyPrice(reel.price)}
-              </span>
+              {/* Top Badges */}
+              <div className="absolute top-3 left-3 z-20 flex items-center gap-1.5 flex-wrap">
+                {isSoldOut ? (
+                  <span className="bg-stone-950 text-white font-black text-[10px] px-3 py-1 rounded-full uppercase shadow">
+                    SOLD OUT
+                  </span>
+                ) : (
+                  <span className="bg-rose-600/90 backdrop-blur-md text-white font-extrabold text-[10px] px-3 py-1 rounded-full uppercase shadow flex items-center gap-1">
+                    <Tag className="w-3 h-3 text-amber-300" /> TIKTOK DEAL
+                  </span>
+                )}
+              </div>
 
-              {/* Dual Actions: Buy Outfit on Website AND Watch TikTok Reel */}
-              <div className="grid grid-cols-2 gap-2 mt-3">
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    if (typeof onOpenSingleProduct === 'function') {
-                      onOpenSingleProduct(reel);
-                    }
-                  }}
-                  className="w-full bg-white hover:bg-amber-400 text-stone-950 font-black py-3 rounded-xl flex items-center justify-center gap-1.5 shadow-xl transition text-xs uppercase tracking-wider active:scale-95"
-                >
-                  <Eye className="w-4 h-4 text-amber-600" />
-                  <span>Buy Outfit</span>
-                </button>
+              {/* Bottom Overlay Card */}
+              <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-stone-950 via-stone-950/90 to-transparent p-5 sm:p-6 flex flex-col justify-end text-white z-10">
+                <span className="text-[10px] bg-amber-500 text-stone-950 font-black px-3 py-1 rounded-full w-fit uppercase tracking-wider mb-2 shadow">
+                  VIRAL REEL FASHION
+                </span>
+                <h3 className="text-base sm:text-lg font-bold leading-snug truncate">{reel.name}</h3>
+                <span className="text-lg sm:text-xl font-black text-amber-400 my-1">
+                  {formatCurrencyPrice(reel.price)}
+                </span>
 
-                <a
-                  href="https://tiktok.com"
-                  target="_blank"
-                  rel="noreferrer"
-                  onClick={(e) => e.stopPropagation()}
-                  className="w-full bg-stone-900/90 hover:bg-black text-rose-300 font-bold py-3 rounded-xl flex items-center justify-center gap-1.5 border border-rose-500/40 text-xs transition"
-                  title="Watch original reel on TikTok profile"
-                >
-                  <TikTokIcon className="w-4 h-4 text-rose-400" />
-                  <span>Watch TikTok Reel</span>
-                </a>
+                {/* Dual Actions: Buy Outfit on Website AND Watch Reel */}
+                <div className="grid grid-cols-2 gap-2 mt-3">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (typeof onOpenSingleProduct === 'function') {
+                        onOpenSingleProduct(reel);
+                      }
+                    }}
+                    className="w-full bg-white hover:bg-amber-400 text-stone-950 font-black py-3 rounded-xl flex items-center justify-center gap-1.5 shadow-xl transition text-xs uppercase tracking-wider active:scale-95"
+                  >
+                    <Eye className="w-4 h-4 text-amber-600 shrink-0" />
+                    <span className="truncate">{isSoldOut ? 'View Fit' : 'Buy Outfit'}</span>
+                  </button>
+
+                  <a
+                    href="https://tiktok.com"
+                    target="_blank"
+                    rel="noreferrer"
+                    onClick={(e) => e.stopPropagation()}
+                    className="w-full bg-stone-900/90 hover:bg-black text-rose-300 font-bold py-3 rounded-xl flex items-center justify-center gap-1.5 border border-rose-500/40 text-xs transition"
+                    title="Watch original reel on TikTok"
+                  >
+                    <TikTokIcon className="w-4 h-4 text-rose-400 shrink-0" />
+                    <span className="truncate">Watch Reel</span>
+                  </a>
+                </div>
               </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </section>
   );

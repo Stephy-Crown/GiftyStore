@@ -81,9 +81,8 @@ export default function App() {
       id: 1,
       tag: "OWAMBE ROYALTY",
       title: "Owambe Corset Gowns & Aso-Ebi Glamour",
-      type: "video",
-      videoUrl: "https://assets.mixkit.co/videos/preview/mixkit-fashion-model-walking-on-a-catwalk-41584-large.mp4",
-      posterUrl: "https://images.unsplash.com/photo-1567401893414-76b7b1e5a7a5?w=1920&auto=format&fit=crop&q=85",
+      type: "image",
+      imageUrl: "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=1920&auto=format&fit=crop&q=85",
       cta: "Explore Collection"
     },
     {
@@ -91,7 +90,7 @@ export default function App() {
       tag: "ANKARA & ADIRE LUXE",
       title: "Hand-Crafted Ankara Lace & Silk Sets",
       type: "image",
-      imageUrl: "https://images.unsplash.com/photo-1567401893414-76b7b1e5a7a5?w=1920&auto=format&fit=crop&q=85",
+      imageUrl: "https://images.unsplash.com/photo-1571513722275-4b41940f54b8?w=1920&auto=format&fit=crop&q=85",
       cta: "Shop Ankara Fits"
     },
     {
@@ -99,7 +98,7 @@ export default function App() {
       tag: "ROYAL VELVET COUTURE",
       title: "Lagos VIP Wedding & Evening Velvet Sets",
       type: "image",
-      imageUrl: "https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?w=1920&auto=format&fit=crop&q=85",
+      imageUrl: "https://images.unsplash.com/photo-1539109136881-3be0616acf4b?w=1920&auto=format&fit=crop&q=85",
       cta: "Shop Velvet Couture"
     },
     {
@@ -516,7 +515,12 @@ export default function App() {
           </div>
 
           {/* TikTok Shop Section */}
-          <TikTokShopSection products={safeProducts} onAddToCart={addToCart} onOpenSingleProduct={openSingleProduct} />
+          <TikTokShopSection
+            products={safeProducts}
+            onAddToCart={addToCart}
+            onOpenSingleProduct={openSingleProduct}
+            onNavigateToTikTokTab={() => navigateToView('reels')}
+          />
 
           {/* Catalog Grid with Size, Price, AND Prominent Wishlist Filter */}
           <div className="space-y-6 pt-6 border-t border-stone-200">
