@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Trash2, Edit3, ShieldCheck, Tag, Copy, Sparkles, RefreshCw, Key, Lock, Check, Upload, Image, AlertCircle, X, LogOut, Mail } from 'lucide-react';
+import { Plus, Trash2, Edit3, ShieldCheck, Tag, Copy, Sparkles, RefreshCw, Key, Lock, Check, Upload, Image, AlertCircle, X, LogOut, Mail, Package, AlertTriangle } from 'lucide-react';
 import siteConfig from '../data/config.json';
-import { updateProductInSupabase, deleteProductFromSupabase, addProductToSupabase, signInAdmin, signOutAdmin, getCurrentAdminSession, updateAdminPassword } from '../services/supabase';
+import { updateProductInSupabase, deleteProductFromSupabase, addProductToSupabase, signInAdmin, signOutAdmin, getCurrentAdminSession, updateAdminPassword, updateAdminEmail } from '../services/supabase';
 
 export function AdminDashboard({ products, setProducts }) {
   const [activeTab, setActiveTab] = useState('products'); // 'products' | 'negotiate' | 'security'
@@ -10,12 +10,18 @@ export function AdminDashboard({ products, setProducts }) {
   const [isUnlocked, setIsUnlocked] = useState(false);
   const [adminEmail, setAdminEmail] = useState('');
   const [adminPassword, setAdminPassword] = useState('');
+  const [currentAdminUser, setCurrentAdminUser] = useState(null);
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [failedAttempts, setFailedAttempts] = useState(0);
   const [lockoutTimer, setLockoutTimer] = useState(0);
   const [loginError, setLoginError] = useState('');
 
-  // Security Password Change
+  // Security Credentials Reset State
+  const [newEmailInput, setNewEmailInput] = useState('');
+  const [isUpdatingEmail, setIsUpdatingEmail] = useState(false);
+  const [emailChangeSuccess, setEmailChangeSuccess] = useState('');
+  const [emailChangeError, setEmailChangeError] = useState('');
+
   const [newPasswordInput, setNewPasswordInput] = useState('');
   const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
   const [passwordChangeSuccess, setPasswordChangeSuccess] = useState('');
@@ -28,7 +34,7 @@ export function AdminDashboard({ products, setProducts }) {
   // Delete Confirmation Modal State
   const [deleteConfirmProduct, setDeleteConfirmProduct] = useState(null);
 
-  // Edit Product Form State
+  // Edit Product Form State (Includes Stock Management)
   const [editingId, setEditingId] = useState(null);
   const [form, setForm] = useState({
     name: '',
@@ -38,6 +44,7 @@ export function AdminDashboard({ products, setProducts }) {
     video_url: '',
     sizes: ['S', 'M', 'L', 'XL'],
     is_tiktok_featured: true,
+    stock: 5,
   });
 
   // Negotiated Link Generator State
@@ -53,6 +60,7 @@ export function AdminDashboard({ products, setProducts }) {
       const session = await getCurrentAdminSession();
       if (session) {
         setIsUnlocked(true);
+        setCurrentAdminUser(session.user);
       }
     }
     checkSession();
@@ -70,6 +78,7 @@ export function AdminDashboard({ products, setProducts }) {
 
     if (res.user || res.session) {
       setIsUnlocked(true);
+      setCurrentAdminUser(res.user);
       setFailedAttempts(0);
       setAdminPassword('');
       setLoginError('');
@@ -100,6 +109,30 @@ export function AdminDashboard({ products, setProducts }) {
   const handleSignOut = async () => {
     await signOutAdmin();
     setIsUnlocked(false);
+    setCurrentAdminUser(null);
+  };
+
+  const handleEmailChange = async (e) => {
+    e.preventDefault();
+    if (!newEmailInput || !newEmailInput.includes('@')) {
+      setEmailChangeError('Please enter a valid email address.');
+      return;
+    }
+
+    setIsUpdatingEmail(true);
+    setEmailChangeError('');
+    setEmailChangeSuccess('');
+
+    const res = await updateAdminEmail(newEmailInput);
+    setIsUpdatingEmail(false);
+
+    if (res.success) {
+      setEmailChangeSuccess(res.message);
+      setNewEmailInput('');
+      setTimeout(() => setEmailChangeSuccess(''), 4000);
+    } else {
+      setEmailChangeError(res.message);
+    }
   };
 
   const handlePasswordChange = async (e) => {
@@ -139,6 +172,16 @@ export function AdminDashboard({ products, setProducts }) {
     }
   };
 
+  // Quick Restock Handler for Inventory Items
+  const handleQuickStockUpdate = async (product, newStock) => {
+    const updatedStock = Math.max(0, newStock);
+    const payload = { stock: updatedStock };
+    await updateProductInSupabase(product.id, payload);
+    setProducts((prev) =>
+      prev.map((p) => (String(p.id) === String(product.id) ? { ...p, stock: updatedStock } : p))
+    );
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!form.name || !form.price || !form.image) {
@@ -155,6 +198,7 @@ export function AdminDashboard({ products, setProducts }) {
       video_url: form.video_url,
       sizes: form.sizes,
       is_tiktok_featured: form.is_tiktok_featured,
+      stock: Number(form.stock !== undefined ? form.stock : 5),
     };
 
     if (editingId) {
@@ -163,7 +207,7 @@ export function AdminDashboard({ products, setProducts }) {
         prev.map((p) => (String(p.id) === String(editingId) ? { ...p, ...payload } : p))
       );
       setEditingId(null);
-      setFormSuccess('Outfit updated successfully!');
+      setFormSuccess('Outfit and Stock count updated successfully!');
     } else {
       const created = await addProductToSupabase(payload);
       setProducts((prev) => [created || { ...payload, id: Date.now() }, ...prev]);
@@ -180,6 +224,7 @@ export function AdminDashboard({ products, setProducts }) {
       video_url: '',
       sizes: ['S', 'M', 'L', 'XL'],
       is_tiktok_featured: true,
+      stock: 5,
     });
   };
 
@@ -194,6 +239,7 @@ export function AdminDashboard({ products, setProducts }) {
       video_url: product.video_url || '',
       sizes: product.sizes || ['S', 'M', 'L', 'XL'],
       is_tiktok_featured: product.is_tiktok_featured ?? true,
+      stock: product.stock !== undefined ? product.stock : 5,
     });
   };
 
@@ -290,7 +336,7 @@ export function AdminDashboard({ products, setProducts }) {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-stone-200">
         <div>
           <span className="text-[10px] font-black uppercase tracking-widest text-amber-700 bg-amber-50 px-3 py-1 rounded-full border border-amber-200">
-            Authenticated Store Owner
+            Authenticated Store Owner {currentAdminUser?.email && `(${currentAdminUser.email})`}
           </span>
           <h1 className="text-2xl sm:text-3xl font-serif font-black text-stone-900 mt-1">GIFTY Owner Control Center</h1>
         </div>
@@ -319,7 +365,7 @@ export function AdminDashboard({ products, setProducts }) {
                 activeTab === 'security' ? 'bg-stone-900 text-amber-400 shadow' : 'text-stone-600 hover:text-stone-900'
               }`}
             >
-              Security Settings
+              Reset Admin Details
             </button>
           </div>
 
@@ -341,7 +387,7 @@ export function AdminDashboard({ products, setProducts }) {
           <div className="lg:col-span-1 bg-stone-50 p-6 rounded-3xl border border-stone-200 space-y-4">
             <h3 className="text-lg font-serif font-black text-stone-900 flex items-center gap-2">
               {editingId ? <Edit3 className="w-5 h-5 text-amber-600" /> : <Plus className="w-5 h-5 text-amber-600" />}
-              {editingId ? 'Edit Dress Outfit' : 'Upload New Dress'}
+              {editingId ? 'Edit Dress & Restock' : 'Upload New Dress'}
             </h3>
 
             {formError && (
@@ -367,15 +413,31 @@ export function AdminDashboard({ products, setProducts }) {
                 />
               </div>
 
-              <div className="space-y-1">
-                <label className="font-bold text-stone-700">Price (NGN ₦)</label>
-                <input
-                  type="number"
-                  placeholder="e.g. 55000"
-                  value={form.price}
-                  onChange={(e) => setForm((prev) => ({ ...prev, price: e.target.value }))}
-                  className="w-full p-3 bg-white border border-stone-200 rounded-xl font-bold text-stone-900 outline-none"
-                />
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <label className="font-bold text-stone-700">Price (NGN ₦)</label>
+                  <input
+                    type="number"
+                    placeholder="e.g. 55000"
+                    value={form.price}
+                    onChange={(e) => setForm((prev) => ({ ...prev, price: e.target.value }))}
+                    className="w-full p-3 bg-white border border-stone-200 rounded-xl font-bold text-stone-900 outline-none"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="font-bold text-stone-700 flex items-center gap-1">
+                    <Package className="w-3.5 h-3.5 text-amber-600" /> Stock Units
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    placeholder="e.g. 5"
+                    value={form.stock}
+                    onChange={(e) => setForm((prev) => ({ ...prev, stock: e.target.value }))}
+                    className="w-full p-3 bg-white border border-stone-200 rounded-xl font-black text-stone-900 outline-none"
+                  />
+                </div>
               </div>
 
               <div className="space-y-1">
@@ -434,14 +496,14 @@ export function AdminDashboard({ products, setProducts }) {
                   type="submit"
                   className="flex-1 bg-stone-900 hover:bg-black text-amber-400 font-extrabold py-3.5 rounded-xl shadow-lg transition"
                 >
-                  {editingId ? 'Save Changes' : 'Publish Outfit'}
+                  {editingId ? 'Save Outfit & Stock' : 'Publish Outfit'}
                 </button>
                 {editingId && (
                   <button
                     type="button"
                     onClick={() => {
                       setEditingId(null);
-                      setForm({ name: '', price: '', category: 'Corset Gowns', image: '', video_url: '', sizes: ['S', 'M', 'L', 'XL'], is_tiktok_featured: true });
+                      setForm({ name: '', price: '', category: 'Corset Gowns', image: '', video_url: '', sizes: ['S', 'M', 'L', 'XL'], is_tiktok_featured: true, stock: 5 });
                     }}
                     className="px-4 py-3.5 bg-stone-200 hover:bg-stone-300 text-stone-700 font-bold rounded-xl"
                   >
@@ -452,40 +514,90 @@ export function AdminDashboard({ products, setProducts }) {
             </form>
           </div>
 
-          {/* Product List */}
+          {/* Product List with Direct Stock Restock Counter */}
           <div className="lg:col-span-2 space-y-4">
             <h3 className="text-lg font-serif font-black text-stone-900">Live Inventory Outfits ({products.length})</h3>
 
             <div className="space-y-3 max-h-[600px] overflow-y-auto pr-1">
-              {products.map((item) => (
-                <div key={item.id} className="flex items-center justify-between bg-stone-50 p-4 rounded-2xl border border-stone-200 gap-4">
-                  <img src={item.image} alt={item.name} className="w-14 h-16 object-cover rounded-xl shadow-sm" />
+              {products.map((item) => {
+                const isSoldOut = item.stock === 0;
 
-                  <div className="flex-1 overflow-hidden">
-                    <span className="text-[10px] font-bold text-amber-700 uppercase tracking-wider block">{item.category}</span>
-                    <h4 className="font-bold text-sm text-stone-900 truncate">{item.name}</h4>
-                    <p className="text-xs font-black text-amber-600">NGN {Number(item.price).toLocaleString()}</p>
-                    <p className="text-[10px] text-stone-400 mt-0.5">Stock Count: {item.stock !== undefined ? item.stock : 5}</p>
-                  </div>
+                return (
+                  <div key={item.id} className="flex flex-col sm:flex-row sm:items-center justify-between bg-stone-50 p-4 rounded-2xl border border-stone-200 gap-4">
+                    <div className="flex items-center gap-3.5">
+                      <img src={item.image} alt={item.name} className={`w-14 h-16 object-cover rounded-xl shadow-sm ${isSoldOut ? 'grayscale brightness-75' : ''}`} />
 
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => startEdit(item)}
-                      className="p-2 bg-white hover:bg-amber-50 text-amber-700 border border-stone-200 rounded-xl transition"
-                      title="Edit Dress"
-                    >
-                      <Edit3 className="w-4 h-4" />
-                    </button>
-                    <button
-                      onClick={() => setDeleteConfirmProduct(item)}
-                      className="p-2 bg-white hover:bg-rose-50 text-rose-600 border border-stone-200 rounded-xl transition"
-                      title="Delete Dress"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-[10px] font-bold text-amber-700 uppercase tracking-wider block">{item.category}</span>
+                          {isSoldOut ? (
+                            <span className="bg-stone-900 text-white text-[9px] font-black px-2 py-0.5 rounded-full uppercase">
+                              SOLD OUT
+                            </span>
+                          ) : item.stock <= 3 ? (
+                            <span className="bg-amber-500 text-stone-950 text-[9px] font-black px-2 py-0.5 rounded-full uppercase">
+                              LOW STOCK ({item.stock})
+                            </span>
+                          ) : null}
+                        </div>
+                        <h4 className="font-bold text-sm text-stone-900 truncate">{item.name}</h4>
+                        <p className="text-xs font-black text-amber-600">NGN {Number(item.price).toLocaleString()}</p>
+                      </div>
+                    </div>
+
+                    {/* Quick Restock Counter Buttons */}
+                    <div className="flex items-center gap-3 pt-2 sm:pt-0 border-t sm:border-t-0 border-stone-200">
+                      <div className="flex items-center gap-1 bg-white p-1 rounded-xl border border-stone-200">
+                        <span className="text-[11px] font-bold text-stone-500 px-1.5">Stock:</span>
+                        <span className={`text-xs font-black px-1.5 ${isSoldOut ? 'text-rose-600' : 'text-stone-900'}`}>
+                          {item.stock !== undefined ? item.stock : 5}
+                        </span>
+
+                        <button
+                          onClick={() => handleQuickStockUpdate(item, (item.stock || 0) + 1)}
+                          className="px-2 py-0.5 bg-stone-100 hover:bg-stone-200 text-stone-900 text-xs font-black rounded-lg transition"
+                          title="Restock +1 unit"
+                        >
+                          +1
+                        </button>
+                        <button
+                          onClick={() => handleQuickStockUpdate(item, (item.stock || 0) + 5)}
+                          className="px-2 py-0.5 bg-amber-400 hover:bg-amber-300 text-stone-950 text-xs font-black rounded-lg transition"
+                          title="Restock +5 units"
+                        >
+                          +5
+                        </button>
+                        {item.stock > 0 && (
+                          <button
+                            onClick={() => handleQuickStockUpdate(item, 0)}
+                            className="px-1.5 py-0.5 bg-rose-50 hover:bg-rose-100 text-rose-700 text-[10px] font-bold rounded-lg transition"
+                            title="Mark as Sold Out"
+                          >
+                            Mark 0
+                          </button>
+                        )}
+                      </div>
+
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          onClick={() => startEdit(item)}
+                          className="p-2 bg-white hover:bg-amber-50 text-amber-700 border border-stone-200 rounded-xl transition"
+                          title="Edit Dress"
+                        >
+                          <Edit3 className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => setDeleteConfirmProduct(item)}
+                          className="p-2 bg-white hover:bg-rose-50 text-rose-600 border border-stone-200 rounded-xl transition"
+                          title="Delete Dress"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         </div>
@@ -564,56 +676,104 @@ export function AdminDashboard({ products, setProducts }) {
         </div>
       )}
 
-      {/* Security & Password Update Tab */}
+      {/* Reset Admin Credentials Tab */}
       {activeTab === 'security' && (
-        <div className="max-w-xl mx-auto space-y-6 bg-stone-50 p-6 sm:p-8 rounded-3xl border border-stone-200">
+        <div className="max-w-xl mx-auto space-y-8 bg-stone-50 p-6 sm:p-8 rounded-3xl border border-stone-200">
           <div>
-            <h3 className="text-xl font-serif font-black text-stone-900 flex items-center gap-2">
-              <Key className="w-5 h-5 text-amber-600" /> Update Store Owner Password
+            <span className="text-[10px] font-black uppercase tracking-widest text-amber-700 bg-amber-100 px-3 py-1 rounded-full border border-amber-200">
+              Admin Account Credentials
+            </span>
+            <h3 className="text-xl font-serif font-black text-stone-900 mt-2 flex items-center gap-2">
+              <Key className="w-5 h-5 text-amber-600" /> Reset Admin Email & Password
             </h3>
             <p className="text-xs text-stone-500 mt-1">
-              Update your private admin login password securely in Supabase Auth.
+              Update your store owner login email and password securely in Supabase Auth.
             </p>
           </div>
 
-          {passwordChangeError && (
-            <div className="bg-rose-50 text-rose-700 p-3 rounded-xl text-xs font-bold border border-rose-200 flex items-center gap-2">
-              <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
-              <span>{passwordChangeError}</span>
-            </div>
-          )}
+          {/* Reset Admin Email Form */}
+          <div className="bg-white p-5 rounded-2xl border border-stone-200 space-y-3 shadow-sm">
+            <h4 className="font-bold text-xs text-stone-900 flex items-center gap-1.5">
+              <Mail className="w-4 h-4 text-amber-600" /> Reset Admin Email
+            </h4>
 
-          {passwordChangeSuccess && (
-            <div className="bg-emerald-50 text-emerald-800 p-3 rounded-xl text-xs font-bold border border-emerald-200 flex items-center gap-2">
-              <Check className="w-4 h-4 text-emerald-600 shrink-0" />
-              <span>{passwordChangeSuccess}</span>
-            </div>
-          )}
+            {emailChangeError && (
+              <div className="bg-rose-50 text-rose-700 p-3 rounded-xl text-xs font-bold border border-rose-200 flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+                <span>{emailChangeError}</span>
+              </div>
+            )}
 
-          <form onSubmit={handlePasswordChange} className="space-y-4 text-xs">
-            <div className="space-y-1">
-              <label className="font-bold text-stone-700">New Password (Minimum 6 characters)</label>
-              <div className="relative">
+            {emailChangeSuccess && (
+              <div className="bg-emerald-50 text-emerald-800 p-3 rounded-xl text-xs font-bold border border-emerald-200 flex items-center gap-2">
+                <Check className="w-4 h-4 text-emerald-600 shrink-0" />
+                <span>{emailChangeSuccess}</span>
+              </div>
+            )}
+
+            <form onSubmit={handleEmailChange} className="space-y-3 text-xs">
+              <div className="space-y-1">
+                <label className="font-bold text-stone-700">New Admin Email Address</label>
+                <input
+                  type="email"
+                  placeholder="owner@giftystore.com"
+                  value={newEmailInput}
+                  onChange={(e) => setNewEmailInput(e.target.value)}
+                  className="w-full p-3 bg-stone-50 border border-stone-200 rounded-xl font-bold text-stone-900 outline-none"
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={isUpdatingEmail}
+                className="w-full bg-stone-900 hover:bg-black text-amber-400 font-extrabold py-3 rounded-xl text-xs uppercase tracking-wider shadow transition"
+              >
+                {isUpdatingEmail ? 'Updating Email...' : 'Update Admin Email'}
+              </button>
+            </form>
+          </div>
+
+          {/* Reset Admin Password Form */}
+          <div className="bg-white p-5 rounded-2xl border border-stone-200 space-y-3 shadow-sm">
+            <h4 className="font-bold text-xs text-stone-900 flex items-center gap-1.5">
+              <Lock className="w-4 h-4 text-amber-600" /> Reset Admin Password
+            </h4>
+
+            {passwordChangeError && (
+              <div className="bg-rose-50 text-rose-700 p-3 rounded-xl text-xs font-bold border border-rose-200 flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+                <span>{passwordChangeError}</span>
+              </div>
+            )}
+
+            {passwordChangeSuccess && (
+              <div className="bg-emerald-50 text-emerald-800 p-3 rounded-xl text-xs font-bold border border-emerald-200 flex items-center gap-2">
+                <Check className="w-4 h-4 text-emerald-600 shrink-0" />
+                <span>{passwordChangeSuccess}</span>
+              </div>
+            )}
+
+            <form onSubmit={handlePasswordChange} className="space-y-3 text-xs">
+              <div className="space-y-1">
+                <label className="font-bold text-stone-700">New Admin Password (Minimum 6 characters)</label>
                 <input
                   type="password"
                   placeholder="Enter new strong password"
                   value={newPasswordInput}
                   onChange={(e) => setNewPasswordInput(e.target.value)}
-                  className="w-full pl-9 pr-4 py-3 bg-white border border-stone-200 rounded-xl font-bold text-stone-900 outline-none"
+                  className="w-full p-3 bg-stone-50 border border-stone-200 rounded-xl font-bold text-stone-900 outline-none"
                 />
-                <Lock className="w-4 h-4 text-stone-400 absolute left-3 top-3.5" />
               </div>
-            </div>
 
-            <button
-              type="submit"
-              disabled={isUpdatingPassword}
-              className="w-full bg-stone-900 hover:bg-black text-amber-400 font-extrabold py-3.5 rounded-xl text-xs uppercase tracking-wider shadow-lg transition flex items-center justify-center gap-2"
-            >
-              <ShieldCheck className="w-4 h-4 text-amber-400" />
-              <span>{isUpdatingPassword ? 'Updating Password...' : 'Save New Admin Password'}</span>
-            </button>
-          </form>
+              <button
+                type="submit"
+                disabled={isUpdatingPassword}
+                className="w-full bg-stone-900 hover:bg-black text-amber-400 font-extrabold py-3 rounded-xl text-xs uppercase tracking-wider shadow transition"
+              >
+                {isUpdatingPassword ? 'Updating Password...' : 'Save New Admin Password'}
+              </button>
+            </form>
+          </div>
         </div>
       )}
 

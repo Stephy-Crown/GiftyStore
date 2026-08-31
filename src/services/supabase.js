@@ -31,6 +31,19 @@ export async function signInAdmin(email, password) {
   }
 }
 
+export async function updateAdminEmail(newEmail) {
+  if (!supabase) {
+    return { success: true, message: 'Local development admin email updated!' };
+  }
+  try {
+    const { data, error } = await supabase.auth.updateUser({ email: newEmail });
+    if (error) return { success: false, message: error.message };
+    return { success: true, message: 'Admin email update request sent! Please check your new inbox to confirm.' };
+  } catch (err) {
+    return { success: false, message: err.message };
+  }
+}
+
 export async function updateAdminPassword(newPassword) {
   if (!supabase) {
     return { success: true, message: 'Local development password updated!' };
