@@ -9,14 +9,31 @@ export const supabase =
     ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
     : null;
 
-// Clean Authentication for Admin Dashboard (With Persistent Session Storage)
+// 30 Minutes Inactivity Timeout Constant (in milliseconds)
+export const INACTIVITY_TIMEOUT_MS = 30 * 60 * 1000; // 30 minutes
+
+export function updateAdminActivityTimestamp() {
+  const stored = localStorage.getItem('gifty_admin_session');
+  if (stored) {
+    try {
+      const parsed = JSON.parse(stored);
+      parsed.lastActive = Date.now();
+      localStorage.setItem('gifty_admin_session', JSON.stringify(parsed));
+    } catch (e) {
+      // Ignore
+    }
+  }
+}
+
+// Clean Authentication for Admin Dashboard (With Persistent Session Storage & 30-Min Inactivity Timeout)
 export async function signInAdmin(email, password) {
   const targetEmail = email || 'owner@giftystore.com';
-  
+  const now = Date.now();
+
   if (!supabase) {
     // Development local bypass fallback
     if (password === '1234' || password === 'gifty2026') {
-      const devSession = { user: { email: targetEmail }, session: { access_token: 'local_dev_token' }, error: null };
+      const devSession = { user: { email: targetEmail }, session: { access_token: 'local_dev_token' }, lastActive: now, error: null };
       localStorage.setItem('gifty_admin_session', JSON.stringify(devSession));
       return devSession;
     }
@@ -30,7 +47,7 @@ export async function signInAdmin(email, password) {
     });
     if (error) return { user: null, session: null, error };
     
-    const sessObj = { user: data.user, session: data.session, error: null };
+    const sessObj = { user: data.user, session: data.session, lastActive: now, error: null };
     localStorage.setItem('gifty_admin_session', JSON.stringify(sessObj));
     return sessObj;
   } catch (err) {
@@ -44,6 +61,7 @@ export async function updateAdminEmail(newEmail) {
     if (existing) {
       const parsed = JSON.parse(existing);
       parsed.user = { ...parsed.user, email: newEmail };
+      parsed.lastActive = Date.now();
       localStorage.setItem('gifty_admin_session', JSON.stringify(parsed));
     }
     return { user: { email: newEmail }, success: true, message: 'Admin email updated!' };
@@ -77,24 +95,33 @@ export async function signOutAdmin() {
 }
 
 export async function getCurrentAdminSession() {
-  // Check Supabase session first
-  if (supabase) {
-    const { data } = await supabase.auth.getSession();
-    if (data?.session) {
-      return data.session;
-    }
-  }
-
-  // Fallback to localStorage session
   const stored = localStorage.getItem('gifty_admin_session');
+  
   if (stored) {
     try {
       const parsed = JSON.parse(stored);
+      if (parsed && parsed.lastActive) {
+        const elapsed = Date.now() - Number(parsed.lastActive);
+        if (elapsed > INACTIVITY_TIMEOUT_MS) {
+          // Session expired due to 30 minutes of inactivity
+          localStorage.removeItem('gifty_admin_session');
+          if (supabase) await supabase.auth.signOut();
+          return null;
+        }
+      }
       if (parsed && (parsed.session || parsed.user)) {
         return parsed;
       }
     } catch (e) {
       localStorage.removeItem('gifty_admin_session');
+    }
+  }
+
+  // Check Supabase session fallback
+  if (supabase) {
+    const { data } = await supabase.auth.getSession();
+    if (data?.session) {
+      return data.session;
     }
   }
 

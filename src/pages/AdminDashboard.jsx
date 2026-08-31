@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Trash2, Edit3, ShieldCheck, Tag, Copy, Sparkles, RefreshCw, Key, Lock, Check, Upload, Image, AlertCircle, X, LogOut, Mail, Package, AlertTriangle, Search, ChevronLeft, ChevronRight, SlidersHorizontal } from 'lucide-react';
 import siteConfig from '../data/config.json';
-import { updateProductInSupabase, deleteProductFromSupabase, addProductToSupabase, signInAdmin, signOutAdmin, getCurrentAdminSession, updateAdminPassword, updateAdminEmail } from '../services/supabase';
+import { updateProductInSupabase, deleteProductFromSupabase, addProductToSupabase, signInAdmin, signOutAdmin, getCurrentAdminSession, updateAdminPassword, updateAdminEmail, updateAdminActivityTimestamp } from '../services/supabase';
 
 export function AdminDashboard({ products, setProducts, showToast }) {
   const [activeTab, setActiveTab] = useState('products'); // 'products' | 'negotiate' | 'security'
@@ -80,6 +80,39 @@ export function AdminDashboard({ products, setProducts, showToast }) {
     }
     checkSession();
   }, []);
+
+  // Activity Event Listener & 30-Minute Inactivity Auto-Logout
+  useEffect(() => {
+    if (!isUnlocked) return;
+
+    const handleUserActivity = () => {
+      updateAdminActivityTimestamp();
+    };
+
+    window.addEventListener('mousemove', handleUserActivity);
+    window.addEventListener('keydown', handleUserActivity);
+    window.addEventListener('touchstart', handleUserActivity);
+    window.addEventListener('scroll', handleUserActivity);
+    window.addEventListener('click', handleUserActivity);
+
+    const interval = setInterval(async () => {
+      const session = await getCurrentAdminSession();
+      if (!session) {
+        setIsUnlocked(false);
+        setCurrentAdminUser(null);
+        triggerToast('Session timed out after 30 minutes of inactivity');
+      }
+    }, 30000);
+
+    return () => {
+      window.removeEventListener('mousemove', handleUserActivity);
+      window.removeEventListener('keydown', handleUserActivity);
+      window.removeEventListener('touchstart', handleUserActivity);
+      window.removeEventListener('scroll', handleUserActivity);
+      window.removeEventListener('click', handleUserActivity);
+      clearInterval(interval);
+    };
+  }, [isUnlocked]);
 
   const handleUnlock = async (e) => {
     e.preventDefault();
@@ -373,19 +406,19 @@ export function AdminDashboard({ products, setProducts, showToast }) {
 
   return (
     <div className="space-y-5 sm:space-y-8 bg-white rounded-3xl p-4 sm:p-8 border border-stone-200 shadow-xl max-w-7xl mx-auto w-full overflow-x-hidden">
-      {/* Clean Professional Admin Header */}
-      <div className="flex items-center justify-between gap-3 pb-4 sm:pb-6 border-b border-stone-200">
-        <div>
-          <h1 className="text-xl sm:text-2xl font-serif font-black text-stone-900">GIFTY Control Center</h1>
-        </div>
+      {/* Clean Professional Admin Header with Perfectly Aligned Mobile Sign Out */}
+      <div className="flex items-center justify-between gap-2 pb-4 sm:pb-6 border-b border-stone-200 w-full overflow-hidden">
+        <h1 className="text-base sm:text-2xl font-serif font-black text-stone-900 truncate">
+          GIFTY Control Center
+        </h1>
 
         <button
           onClick={handleSignOut}
-          className="px-3.5 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shrink-0 shadow-sm"
+          className="px-3 py-1.5 sm:px-3.5 sm:py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-xl font-bold transition flex items-center gap-1.5 shrink-0 shadow-sm"
           title="Sign Out"
         >
-          <LogOut className="w-3.5 h-3.5" />
-          <span>Sign Out</span>
+          <LogOut className="w-3.5 h-3.5 text-rose-600" />
+          <span className="text-[11px] sm:text-xs">Sign Out</span>
         </button>
       </div>
 
